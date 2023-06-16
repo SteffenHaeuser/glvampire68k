@@ -17,12 +17,35 @@ mat4 projectionMatrix;    // aktuelle Projektionsmatrix
 // Die aktuelle Matrix, auf die Operationen angewendet werden sollen
 mat4* currentMatrix = &modelViewMatrix;
 MatrixStack matrixStack; 
+int vampDrawModes = 0;
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
 void glCullFace(int i)
 {
-	// Currently empty implementation as the game I need it for does not do much with this
+	if (i==GL_FRONT)
+	{
+		vampDrawModes|= MAG_DRAWMODE_CULL_CCW;
+	}
+}
+
+void glDrawBuffer(int i)
+{
+}
+
+void gluBeginFrame()
+{
+	magBeginScene();
+}
+
+void gluEndFrame()
+{
+	magSetDrawMode(vampDrawModes);
+	magEndScene();
+}
+
+void glPolygonMode(int i, int j)
+{
 }
 
 void glClearColor(float i, float j, float k, float l)

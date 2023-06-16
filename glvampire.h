@@ -57,8 +57,8 @@ void glTexSubImage2D(int i, int j, int xoff, int yoff, int w, int h, int form, i
 
 void glDepthMask(int i);
 void glCullFace(int i); // DONE (but not completely implemented)
-void glDrawBuffer(int i);
-void glPolygonMode(int i, int j);
+void glDrawBuffer(int i); // DONE (does nothing)
+void glPolygonMode(int i, int j); // DONE
 
 // States
 
