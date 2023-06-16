@@ -18,7 +18,7 @@ mat4 projectionMatrix;    // aktuelle Projektionsmatrix
 mat4* currentMatrix = &modelViewMatrix;
 MatrixStack matrixStack; 
 
-extern void magClearColor(float i, float j, float k, float l);  // To make it compile, will be removed once added to the maggie.library
+extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
 void glCullFace(int i)
 {
@@ -27,7 +27,14 @@ void glCullFace(int i)
 
 void glClearColor(float i, float j, float k, float l)
 {
-	magClearColor((int)i*255,(int)j*255,(int)k*255,(int)l*255);
+	unsigned int rgb;
+	
+	unsigned char a = (unsigned char)(255*l);
+	unsigned char r = (unsigned char)(255*i);
+	unsigned char g = (unsigned char)(255*j);
+	unsigned char b = (unsigned char)(255*k);
+	rgb = (a<<24)|(r<<16)|(g<<8)|(b);
+	magClearColor(rgb);
 }
 
 void glClear(unsigned int i)
