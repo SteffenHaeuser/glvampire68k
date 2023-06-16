@@ -25,8 +25,8 @@ void glGetFloatv(int i, float *w); // Only used to acquire the World Matrix, DON
 
 // Colors
 
-void glClear(unsigned int i);
-void glClearColor(float i, float j, float k, float l);
+void glClear(unsigned int i); // DONE
+void glClearColor(float i, float j, float k, float l); // DONE
 void glColor4f(float r, float g, float b, float a); // DONE
 void glColor4ub(int i, int j, int k, int l); // DONE
 void glColor3f(float x, float y, float z); // DONE
@@ -56,7 +56,7 @@ void glTexSubImage2D(int i, int j, int xoff, int yoff, int w, int h, int form, i
 // Stuff which is probably only used for Default settings and probably can be removed
 
 void glDepthMask(int i);
-void glCullFace(int i);
+void glCullFace(int i); // DONE (but not completely implemented)
 void glDrawBuffer(int i);
 void glPolygonMode(int i, int j);
 

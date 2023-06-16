@@ -1,7 +1,11 @@
 #include "glvampire.h"
+
 #include <maggie_vec.h>
+#include <maggie_flags.h>
+
 #include <map>
 #include <stack>
+
 std::map<int,int> *vampTextureMap = new std::map<int,int>();
 int currentTexture = -1;
 int maxVampTex = 1;
@@ -13,6 +17,26 @@ mat4 projectionMatrix;    // aktuelle Projektionsmatrix
 // Die aktuelle Matrix, auf die Operationen angewendet werden sollen
 mat4* currentMatrix = &modelViewMatrix;
 MatrixStack matrixStack; 
+
+extern void magClearColor(float i, float j, float k, float l);  // To make it compile, will be removed once added to the maggie.library
+
+void glCullFace(int i)
+{
+	// Currently empty implementation as the game I need it for does not do much with this
+}
+
+void glClearColor(float i, float j, float k, float l)
+{
+	magClearColor((int)i*255,(int)j*255,(int)k*255,(int)l*255);
+}
+
+void glClear(unsigned int i)
+{
+	unsigned short clearMode = 0;
+	if (i&GL_COLOR_BUFFER_BIT) clearMode|=MAG_CLEAR_COLOUR;
+	if (i&GL_DEPTH_BUFFER_BIT) clearMode|=MAG_CLEAR_DEPTH;
+	if (clearMode>0) magClear(clearMode);
+}
 
 void glMatrixMode(int mode)
 {
