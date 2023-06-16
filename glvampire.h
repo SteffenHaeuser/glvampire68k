@@ -55,7 +55,7 @@ void glTexSubImage2D(int i, int j, int xoff, int yoff, int w, int h, int form, i
 
 // Stuff which is probably only used for Default settings and probably can be removed
 
-void glDepthMask(int i);
+void glDepthMask(int i); // DONE
 void glCullFace(int i); // DONE (but not completely implemented)
 void glDrawBuffer(int i); // DONE (does nothing)
 void glPolygonMode(int i, int j); // DONE
@@ -78,7 +78,7 @@ void glTexGeni(int i, int j, int k);
 // Z Buffer (only used to avoid models stuck in walls)
 
 void glDepthRange(int i, int j);
-void glDepthFunc(int i);
+void glDepthFunc(int i); // DONE
 
 // TexEnv
 

@@ -27,6 +27,29 @@ void glCullFace(int i)
 	{
 		vampDrawModes|= MAG_DRAWMODE_CULL_CCW;
 	}
+	else
+	{
+		vampDrawModes &= ~MAG_DRAWMODE_CULL_CCW;
+	}
+}
+
+void glDepthFunc(int i)
+{
+	// Maggie only supports GL_LEQUAL
+}
+
+void glDepthMask(int i)
+{
+	// Not really correct implementation, DepthMask should only affect the writing, which currently is not possible on the Maggie Chipset
+	
+	if (i==GL_TRUE)
+	{
+		vampDrawModes|= MAG_DRAWMODE_DEPTHBUFFER;
+	}
+	else
+	{
+		vampDrawModes &= ~MAG_DRAWMODE_DEPTHBUFFER;
+	}
 }
 
 void glDrawBuffer(int i)
