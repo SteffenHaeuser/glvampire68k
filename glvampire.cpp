@@ -2,9 +2,11 @@
 
 #include <maggie_vec.h>
 #include <maggie_flags.h>
+#include <maggie_vertex.h>
 
 #include <map>
 #include <stack>
+#include <vector>
 
 std::map<int,int> *vampTextureMap = new std::map<int,int>();
 int currentTexture = -1;
@@ -20,6 +22,110 @@ MatrixStack matrixStack;
 int vampDrawModes = 0;
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
+
+int currentMode;
+std::vector<MaggieVertex> vertices;
+
+void glBegin(GLenum mode) {
+    switch (mode) {
+        case GL_QUADS:
+        case GL_POLYGON:
+        case GL_TRIANGLE_FAN:
+        case GL_LINE_STRIP:
+        case GL_LINES:
+        case GL_TRIANGLE_STRIP:
+            currentMode = static_cast<int>(mode);
+            vertices.clear();
+            break;
+        // Weitere mögliche Modi hier einfügen
+        default:
+            // Nicht unterstützter Modus
+            break;
+    }
+}
+
+void glEnd() 
+{
+	int nVtx;
+	int startVtx;
+	int startVtxLineStrip;
+	int nVtxLineStrip;
+	int startVtxLines; 
+	int nVtxLines;
+	int startVtxTriangleStrip;	
+	int nVtxTriangleStrip;
+	
+    switch (currentMode) {
+        case GL_QUADS:
+            if (vertices.size() % 4 != 0) {
+                // Fehler: Anzahl der Vertices ist nicht durch 4 teilbar
+                break;
+            }
+            for (size_t i = 0; i < vertices.size(); i += 4) {
+                int startVtx = static_cast<int>(i);
+                int nVtx = 4;
+                magDrawTriangles(startVtx, nVtx);
+            }
+            break;
+        case GL_POLYGON:
+            if (vertices.size() < 3) {
+                // Fehler: Nicht genügend Vertices für Polygon
+                break;
+            }
+            magDrawIndexedPolygons(0, static_cast<UWORD>(vertices.size()), 0, static_cast<UWORD>(vertices.size()));
+            break;
+        case GL_TRIANGLE_FAN:
+            if (vertices.size() < 3) {
+                // Fehler: Nicht genügend Vertices für Triangle Fan
+                break;
+            }
+            startVtx = 1;
+            nVtx = static_cast<int>(vertices.size()) - 2;
+            magDrawIndexedTriangles(startVtx, nVtx, 0, static_cast<UWORD>(vertices.size()));
+            break;
+        case GL_LINE_STRIP:
+            if (vertices.size() < 2) {
+                // Fehler: Nicht genügend Vertices für Line Strip
+                break;
+            }
+            {
+                SpanPosition start, end;
+                start.u = static_cast<ULONG>(vertices[0].pos.x);
+                start.v = static_cast<ULONG>(vertices[0].pos.y);
+                end.u = static_cast<ULONG>(vertices[vertices.size() - 1].pos.x);
+                end.v = static_cast<ULONG>(vertices[vertices.size() - 1].pos.y);
+                magDrawLinearSpan(&start, &end);
+            }
+            break;
+        case GL_LINES:
+#if 0		
+            if (vertices.size() % 2 != 0) {
+                // Fehler: Anzahl der Vertices ist nicht durch 2 teilbar
+                break;
+            }
+            {
+                MaggieClippedVertex start, end;
+                start.u = static_cast<ULONG>(vertices[0].pos.x);
+                start.v = static_cast<ULONG>(vertices[0].pos.y);
+                end.u = static_cast<ULONG>(vertices[vertices.size() - 1].pos.x);
+                end.v = static_cast<ULONG>(vertices[vertices.size() - 1].pos.y);
+                magDrawSpan(&start, &end);
+            }
+#endif			
+            break;
+        case GL_TRIANGLE_STRIP:
+            if (vertices.size() < 3) {
+                // Fehler: Nicht genügend Vertices für Triangle Strip
+                break;
+            }
+            startVtxTriangleStrip = 2;
+            nVtxTriangleStrip = static_cast<int>(vertices.size()) - 2;
+            magDrawIndexedTriangles(startVtxTriangleStrip, nVtxTriangleStrip, 0, static_cast<UWORD>(vertices.size()));
+            break;
+        default:
+            break;
+    }
+}
 
 void glCullFace(int i)
 {
@@ -196,16 +302,26 @@ void glTranslatef(float x, float y, float z)
 
 void glVertex3f(float x, float y, float z)
 {
+    MaggieVertex vertex;
+    vertex.pos = {x, y, z};
+    vertices.push_back(vertex);	
 	magVertex(x,y,z);
 }
 
 void glVertex2f(float x, float y)
 {
+    MaggieVertex vertex;
+    vertex.pos = {x, y, 0.0f};
+    vertices.push_back(vertex);	
 	magVertex(x,y,0.0f);
 }
 
 void glNormal3f(float x, float y, float z)
 {
+    if (!vertices.empty()) {
+        MaggieVertex& currentVertex = vertices.back();
+        currentVertex.normal = {x, y, z};
+    }	
 	magNormal(x,y,z);
 }
 
@@ -213,6 +329,9 @@ void glVertex3fv(float *vec)
 {
 	if (vec!=0)
 	{
+		MaggieVertex vertex;
+		vertex.pos = {vec[0],vec[1],vec[2]};
+		vertices.push_back(vertex);		
 		magVertex(vec[0],vec[1],vec[2]);
 	}
 }

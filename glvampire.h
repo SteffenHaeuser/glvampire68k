@@ -175,6 +175,7 @@ char *glGetString(int i);
 #define GL_EXP2 76
 #define GL_MODELVIEW_MATRIX 77
 #define GL_SCISSOR_TEST 78
+#define GL_LINES 79
 
 #define GLfloat float
 #define GLint int
