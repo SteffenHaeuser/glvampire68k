@@ -45,16 +45,7 @@ void glBegin(GLenum mode) {
 }
 
 void glEnd() 
-{
-	int nVtx;
-	int startVtx;
-	int startVtxLineStrip;
-	int nVtxLineStrip;
-	int startVtxLines; 
-	int nVtxLines;
-	int startVtxTriangleStrip;	
-	int nVtxTriangleStrip;
-	
+{	
     switch (currentMode) {
         case GL_QUADS:
             if (vertices.size() % 4 != 0) {
@@ -124,6 +115,23 @@ void glEnd()
                 end.pos = vertices[vertices.size() - 1].pos;
                 magDrawSpan(&start, &end);
             }
+#else
+            if (vertices.size() % 2 != 0) {
+                // Fehler: Anzahl der Vertices ist nicht durch 2 teilbar
+                break;
+            }
+            {
+                for (size_t i = 0; i < vertices.size(); i += 2) {
+                    struct SpanPosition start, end;
+                    // Initialisierung der Start- und Endposition entsprechend der Vertices
+                    start.u = vertices[i].pos.x;
+                    start.v = vertices[i].pos.y;
+                    end.u = vertices[i + 1].pos.x;
+                    end.v = vertices[i + 1].pos.y;
+                    magDrawLinearSpan(&start, &end);
+                }
+            }
+            break;	
 #endif			
             break;
         case GL_TRIANGLE_STRIP:
@@ -144,6 +152,42 @@ void glEnd()
         default:
             break;
     }
+}
+
+void glVertex3f(float x, float y, float z)
+{
+    MaggieVertex vertex;
+    vertex.pos = {x, y, z};
+    vertices.push_back(vertex);	
+	magVertex(x,y,z);
+}
+
+void glVertex2f(float x, float y)
+{
+    MaggieVertex vertex;
+    vertex.pos = {x, y, 0.0f};
+    vertices.push_back(vertex);	
+	magVertex(x,y,0.0f);
+}
+
+void glNormal3f(float x, float y, float z)
+{
+    if (!vertices.empty()) {
+        MaggieVertex& currentVertex = vertices.back();
+        currentVertex.normal = {x, y, z};
+    }	
+	magNormal(x,y,z);
+}
+
+void glVertex3fv(float *vec)
+{
+	if (vec!=0)
+	{
+		MaggieVertex vertex;
+		vertex.pos = {vec[0],vec[1],vec[2]};
+		vertices.push_back(vertex);		
+		magVertex(vec[0],vec[1],vec[2]);
+	}
 }
 
 void glCullFace(int i)
@@ -317,42 +361,6 @@ void glPopMatrix()
 void glTranslatef(float x, float y, float z)
 {
 	mat4_translate(currentMatrix, x, y, z);
-}
-
-void glVertex3f(float x, float y, float z)
-{
-    MaggieVertex vertex;
-    vertex.pos = {x, y, z};
-    vertices.push_back(vertex);	
-	magVertex(x,y,z);
-}
-
-void glVertex2f(float x, float y)
-{
-    MaggieVertex vertex;
-    vertex.pos = {x, y, 0.0f};
-    vertices.push_back(vertex);	
-	magVertex(x,y,0.0f);
-}
-
-void glNormal3f(float x, float y, float z)
-{
-    if (!vertices.empty()) {
-        MaggieVertex& currentVertex = vertices.back();
-        currentVertex.normal = {x, y, z};
-    }	
-	magNormal(x,y,z);
-}
-
-void glVertex3fv(float *vec)
-{
-	if (vec!=0)
-	{
-		MaggieVertex vertex;
-		vertex.pos = {vec[0],vec[1],vec[2]};
-		vertices.push_back(vertex);		
-		magVertex(vec[0],vec[1],vec[2]);
-	}
 }
 
 void glTexCoord2f(float x, float y)
