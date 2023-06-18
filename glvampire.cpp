@@ -61,27 +61,40 @@ void glEnd()
                 // Fehler: Anzahl der Vertices ist nicht durch 4 teilbar
                 break;
             }
-            for (size_t i = 0; i < vertices.size(); i += 4) {
-                int startVtx = static_cast<int>(i);
-                int nVtx = 4;
-                magDrawTriangles(startVtx, nVtx);
+            {
+                std::vector<unsigned short> indices(vertices.size());
+                for (size_t i = 0; i < indices.size(); i++) {
+                    indices[i] = static_cast<unsigned short>(i);
+                }
+                magDrawIndexedPolygonsUP(&vertices[0], static_cast<unsigned short>(vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
             }
-            break;
+			break;
         case GL_POLYGON:
             if (vertices.size() < 3) {
                 // Fehler: Nicht genügend Vertices für Polygon
                 break;
             }
-            magDrawIndexedPolygons(0, static_cast<UWORD>(vertices.size()), 0, static_cast<UWORD>(vertices.size()));
+            {
+                std::vector<unsigned short> indices(vertices.size());
+                for (size_t i = 0; i < indices.size(); i++) {
+                    indices[i] = static_cast<unsigned short>(i);
+                }
+                magDrawIndexedPolygonsUP(&vertices[0], static_cast<unsigned short>(vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
+            }
             break;
         case GL_TRIANGLE_FAN:
             if (vertices.size() < 3) {
                 // Fehler: Nicht genügend Vertices für Triangle Fan
                 break;
             }
-            startVtx = 1;
-            nVtx = static_cast<int>(vertices.size()) - 2;
-            magDrawIndexedTriangles(startVtx, nVtx, 0, static_cast<UWORD>(vertices.size()));
+            {
+                std::vector<unsigned short> indices(vertices.size());
+                indices[0] = 0;
+                for (size_t i = 1; i < indices.size(); i++) {
+                    indices[i] = static_cast<unsigned short>(i);
+                }
+                magDrawIndexedTrianglesUP(&vertices[0], static_cast<unsigned short>(vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
+            }
             break;
         case GL_LINE_STRIP:
             if (vertices.size() < 2) {
@@ -89,11 +102,12 @@ void glEnd()
                 break;
             }
             {
-                SpanPosition start, end;
-                start.u = static_cast<ULONG>(vertices[0].pos.x);
-                start.v = static_cast<ULONG>(vertices[0].pos.y);
-                end.u = static_cast<ULONG>(vertices[vertices.size() - 1].pos.x);
-                end.v = static_cast<ULONG>(vertices[vertices.size() - 1].pos.y);
+                struct SpanPosition start, end;
+                // Initialisierung der Start- und Endposition entsprechend der Vertices
+                start.u = vertices[0].pos.x;
+                start.v = vertices[0].pos.y;
+                end.u = vertices[vertices.size() - 1].pos.x;
+                end.v = vertices[vertices.size() - 1].pos.y;
                 magDrawLinearSpan(&start, &end);
             }
             break;
@@ -104,11 +118,10 @@ void glEnd()
                 break;
             }
             {
-                MaggieClippedVertex start, end;
-                start.u = static_cast<ULONG>(vertices[0].pos.x);
-                start.v = static_cast<ULONG>(vertices[0].pos.y);
-                end.u = static_cast<ULONG>(vertices[vertices.size() - 1].pos.x);
-                end.v = static_cast<ULONG>(vertices[vertices.size() - 1].pos.y);
+                struct MaggieClippedVertex start, end;
+                // Initialisierung des Start- und Endvertices entsprechend den Vertices
+                start.pos = vertices[0].pos;
+                end.pos = vertices[vertices.size() - 1].pos;
                 magDrawSpan(&start, &end);
             }
 #endif			
@@ -118,9 +131,15 @@ void glEnd()
                 // Fehler: Nicht genügend Vertices für Triangle Strip
                 break;
             }
-            startVtxTriangleStrip = 2;
-            nVtxTriangleStrip = static_cast<int>(vertices.size()) - 2;
-            magDrawIndexedTriangles(startVtxTriangleStrip, nVtxTriangleStrip, 0, static_cast<UWORD>(vertices.size()));
+            {
+                struct SpanPosition start, end;
+                // Initialisierung der Start- und Endposition entsprechend der Vertices
+                start.u = vertices[0].pos.x;
+                start.v = vertices[0].pos.y;
+                end.u = vertices[vertices.size() - 1].pos.x;
+                end.v = vertices[vertices.size() - 1].pos.y;
+                magDrawLinearSpan(&start, &end);
+            }
             break;
         default:
             break;
