@@ -14,7 +14,7 @@ void glPushMatrix(); // DONE
 void glPopMatrix(); // DONE
 void glLoadMatrixf(float *f); // DONE
 void glScissor(int x, int y, int w, int h);
-void glViewport(int x, int y, int w, int h);
+void glViewport(int x, int y, int w, int h); // DONE (with possibly some questions)
 void glMatrixMode(int i); // DONE
 void glTranslatef(float x, float y, float z); // DONE
 void glRotatef(float i, float x, float y, float z); // DONE
@@ -62,14 +62,14 @@ void glPolygonMode(int i, int j); // DONE
 
 // States
 
-void glEnable(int i);
-void glDisable(int i);
+void glEnable(int i); 
+void glDisable(int i); 
 
 // Handling, a lot of it can be removed
 
 int glGetError();
-void glBegin(int i);
-void glEnd();
+void glBegin(int i); // DONE
+void glEnd(); // DONE
 
 // glTexGen (might not be needed, not sure)
 

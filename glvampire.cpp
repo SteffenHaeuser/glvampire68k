@@ -1,5 +1,6 @@
 #include "glvampire.h"
 
+#include <proto/exec.h>
 #include <maggie_vec.h>
 #include <maggie_flags.h>
 #include <maggie_vertex.h>
@@ -20,11 +21,50 @@ mat4 projectionMatrix;    // aktuelle Projektionsmatrix
 mat4* currentMatrix = &modelViewMatrix;
 MatrixStack matrixStack; 
 int vampDrawModes = 0;
+UWORD *vampScreenPixels[3];
+int vampCurrentBuffer = 0;
+int vampBpp = 4;
+int vampWidth = 640;
+int vampHeight = 480;
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
 int currentMode;
 std::vector<MaggieVertex> vertices;
+
+void gluOpenDisplay(int BPP)
+{
+	vampBpp = BPP;
+	if (vampBpp==4)
+	{
+		vampDrawModes|= MAG_DRAWMODE_32BIT;
+	}
+	else if (vampBpp==2)
+	{
+		vampDrawModes &= ~MAG_DRAWMODE_32BIT;
+	}		
+}
+
+void glViewport(int x, int y, int width, int height)
+{
+    // Calculate the size of the screen memory buffer
+    int bufferSize = width * height * sizeof(UWORD);
+
+	UBYTE *screenMem = (UBYTE*)AllocMem(width * height * vampBpp * 3, MEMF_ANY | MEMF_CLEAR);
+    if (screenMem== NULL)
+    {
+        return;
+    }
+
+	vampScreenPixels[0] = (UWORD *)screenMem;
+	for(LONG i = 1; i < 3; ++i)
+		vampScreenPixels[i] = vampScreenPixels[i - 1] + width * height;
+	
+	APTR pixels = vampScreenPixels[vampCurrentBuffer];
+	magSetScreenMemory((void **)pixels, width, height);
+	vampWidth = width;
+	vampHeight = height;
+}
 
 void glBegin(GLenum mode) {
     switch (mode) {
@@ -37,9 +77,7 @@ void glBegin(GLenum mode) {
             currentMode = static_cast<int>(mode);
             vertices.clear();
             break;
-        // Weitere mögliche Modi hier einfügen
         default:
-            // Nicht unterstützter Modus
             break;
     }
 }
@@ -227,12 +265,31 @@ void glDrawBuffer(int i)
 
 void gluBeginFrame()
 {
+	int i;
+	float matrix[16];
 	magBeginScene();
+	vampCurrentBuffer = (vampCurrentBuffer + 1) % 3;
+	APTR pixels = vampScreenPixels[vampCurrentBuffer];	
+	magSetDrawMode(vampDrawModes);
+	magSetScreenMemory((void **)pixels, vampWidth, vampHeight);		
+	for (i=0;i<16;i++)
+	{
+		matrix[i] = projectionMatrix.m[i / 4][i % 4];
+	}
+	magSetPerspectiveMatrix(matrix);
+	for (i=0;i<16;i++)
+	{
+		matrix[i] = modelViewMatrix.m[i / 4][i % 4];
+	}
+	magSetViewMatrix(matrix);	
+	if (currentTexture!=-1)
+	{
+		magSetTexture(0,currentTexture);
+	}
 }
 
 void gluEndFrame()
 {
-	magSetDrawMode(vampDrawModes);
 	magEndScene();
 }
 
@@ -298,7 +355,8 @@ void glGetFloatv(int pname, float* params)
     }
 }
 
-void glOrtho(float left, float right, float bottom, float top, float nearVal, float farVal) {
+void glOrtho(float left, float right, float bottom, float top, float nearVal, float farVal) 
+{
     glLoadIdentity();
 
     float tx = -(right + left) / (right - left);
