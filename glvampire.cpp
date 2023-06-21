@@ -26,14 +26,54 @@ int vampCurrentBuffer = 0;
 int vampBpp = 4;
 int vampWidth = 640;
 int vampHeight = 480;
+mat4 worldMatrix;
+int glError = GL_NO_ERROR;
+struct Library *MaggieBase = 0;
+
+volatile UWORD *SAGA_ScreenModeRead = (UWORD *)0xdfe1f4;
+volatile ULONG *SAGA_ChunkyDataRead = (ULONG *)0xdfe1ec;
+volatile UWORD *SAGA_ScreenMode = (UWORD *)0xdff1f4;
+volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
+
+static DebugMessageCallbackFunc g_DebugMessageCallback = nullptr;
+
+void glDebugMessageCallback(DebugMessageCallbackFunc callback, const void* userParam)
+{
+    g_DebugMessageCallback = callback;
+}
+
+void GenerateGLError(int type, const char* message)
+{
+    // Hier wird ein Fehler generiert
+    if (g_DebugMessageCallback != nullptr)
+    {
+        g_DebugMessageCallback(GL_DEBUG_SOURCE_API, type, 0, GL_DEBUG_SEVERITY_HIGH, strlen(message), message, nullptr);
+    }
+}
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
 int currentMode;
 std::vector<MaggieVertex> vertices;
 
-void gluOpenDisplay(int BPP)
+#define MAGGIE_MODE 0x0b02		// 640x360x16bpp
+
+int glGetError()
 {
+	return glError;
+}
+
+int gluOpenDisplay(int BPP)
+{
+	MaggieBase = OpenLibrary("maggie.library", 0);
+
+	if(!MaggieBase)
+	{
+		glError = GL_INVALID_OPERATION;
+		GenerateGLError(GL_INVALID_OPERATION,"Could not open maggie.library\n");
+		return 0;
+	}
+	
 	vampBpp = BPP;
 	if (vampBpp==4)
 	{
@@ -43,6 +83,15 @@ void gluOpenDisplay(int BPP)
 	{
 		vampDrawModes &= ~MAG_DRAWMODE_32BIT;
 	}		
+	mat4_identity(&worldMatrix);
+
+	*SAGA_ScreenMode = MAGGIE_MODE;	
+}
+
+void gluCloseDisplay()
+{
+	if (MaggieBase) CloseLibrary(MaggieBase);
+	MaggieBase = 0;
 }
 
 void glViewport(int x, int y, int width, int height)
@@ -53,6 +102,8 @@ void glViewport(int x, int y, int width, int height)
 	UBYTE *screenMem = (UBYTE*)AllocMem(width * height * vampBpp * 3, MEMF_ANY | MEMF_CLEAR);
     if (screenMem== NULL)
     {
+		glError = GL_OUT_OF_MEMORY;
+		GenerateGLError(GL_OUT_OF_MEMORY,"Could not allocate Screen Memory\n");
         return;
     }
 
@@ -67,6 +118,7 @@ void glViewport(int x, int y, int width, int height)
 }
 
 void glBegin(GLenum mode) {
+	char error[1024];
     switch (mode) {
         case GL_QUADS:
         case GL_POLYGON:
@@ -78,8 +130,12 @@ void glBegin(GLenum mode) {
             vertices.clear();
             break;
         default:
+			glError = GL_INVALID_ENUM;
+			sprintf(error,"Unknown mode for glBegin: %d\n",mode);
+			GenerateGLError(GL_INVALID_ENUM, error);
             break;
     }
+	magBegin();
 }
 
 void glEnd() 
@@ -87,7 +143,8 @@ void glEnd()
     switch (currentMode) {
         case GL_QUADS:
             if (vertices.size() % 4 != 0) {
-                // Fehler: Anzahl der Vertices ist nicht durch 4 teilbar
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(GL_INVALID_VALUE,"Number of vertices for GL_QUADS not divisible by 4\n");
                 break;
             }
             {
@@ -100,7 +157,8 @@ void glEnd()
 			break;
         case GL_POLYGON:
             if (vertices.size() < 3) {
-                // Fehler: Nicht genügend Vertices für Polygon
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Not enough vertices for polygon\n");
                 break;
             }
             {
@@ -113,7 +171,8 @@ void glEnd()
             break;
         case GL_TRIANGLE_FAN:
             if (vertices.size() < 3) {
-                // Fehler: Nicht genügend Vertices für Triangle Fan
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Not enough vertices for GL_TRIANGLE_FAN\n");
                 break;
             }
             {
@@ -127,7 +186,8 @@ void glEnd()
             break;
         case GL_LINE_STRIP:
             if (vertices.size() < 2) {
-                // Fehler: Nicht genügend Vertices für Line Strip
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Not enough vertices for GL_LINE_STRIP\n");
                 break;
             }
             {
@@ -143,7 +203,8 @@ void glEnd()
         case GL_LINES:
 #if 0		
             if (vertices.size() % 2 != 0) {
-                // Fehler: Anzahl der Vertices ist nicht durch 2 teilbar
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Number of Vertices for GL_LINES not divisible by 2\n");
                 break;
             }
             {
@@ -155,7 +216,8 @@ void glEnd()
             }
 #else
             if (vertices.size() % 2 != 0) {
-                // Fehler: Anzahl der Vertices ist nicht durch 2 teilbar
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Number of Vertices for GL_LINES not divisible by 2\n");
                 break;
             }
             {
@@ -174,7 +236,8 @@ void glEnd()
             break;
         case GL_TRIANGLE_STRIP:
             if (vertices.size() < 3) {
-                // Fehler: Nicht genügend Vertices für Triangle Strip
+				glError = GL_INVALID_VALUE;
+				GenerateGLError(glError,"Not enough vertices for GL_TRIANGLE_STRIP\n");
                 break;
             }
             {
@@ -190,6 +253,7 @@ void glEnd()
         default:
             break;
     }
+	magEnd();
 }
 
 void glVertex3f(float x, float y, float z)
@@ -214,6 +278,11 @@ void glNormal3f(float x, float y, float z)
         MaggieVertex& currentVertex = vertices.back();
         currentVertex.normal = {x, y, z};
     }	
+	else
+	{
+		glError = GL_INVALID_OPERATION;
+		GenerateGLError(glError,"glNormal3f was called before glVertex was called\n");
+	}
 	magNormal(x,y,z);
 }
 
@@ -225,6 +294,11 @@ void glVertex3fv(float *vec)
 		vertex.pos = {vec[0],vec[1],vec[2]};
 		vertices.push_back(vertex);		
 		magVertex(vec[0],vec[1],vec[2]);
+	}
+	else
+	{
+		glError = GL_INVALID_VALUE;
+		GenerateGLError(glError,"Vector for glVertex3fv was empty\n");
 	}
 }
 
@@ -242,7 +316,11 @@ void glCullFace(int i)
 
 void glDepthFunc(int i)
 {
-	// Maggie only supports GL_LEQUAL
+	if (i!=GL_LEQUAL)
+	{
+		glError = GL_INVALID_ENUM;
+		GenerateGLError(glError,"Maggie Chip only support GL_LEQUAL for glDepthFunc\n");
+	}
 }
 
 void glDepthMask(int i)
@@ -268,6 +346,7 @@ void gluBeginFrame()
 	int i;
 	float matrix[16];
 	magBeginScene();
+	*SAGA_ChunkyData = (ULONG)vampScreenPixels[vampCurrentBuffer];
 	vampCurrentBuffer = (vampCurrentBuffer + 1) % 3;
 	APTR pixels = vampScreenPixels[vampCurrentBuffer];	
 	magSetDrawMode(vampDrawModes);
@@ -282,6 +361,11 @@ void gluBeginFrame()
 		matrix[i] = modelViewMatrix.m[i / 4][i % 4];
 	}
 	magSetViewMatrix(matrix);	
+	for (i=0;i<16;i++)
+	{
+		matrix[i] = worldMatrix.m[i / 4][i % 4];
+	}	
+	magSetWorldMatrix(matrix);
 	if (currentTexture!=-1)
 	{
 		magSetTexture(0,currentTexture);
@@ -315,6 +399,11 @@ void glClear(unsigned int i)
 	if (i&GL_COLOR_BUFFER_BIT) clearMode|=MAG_CLEAR_COLOUR;
 	if (i&GL_DEPTH_BUFFER_BIT) clearMode|=MAG_CLEAR_DEPTH;
 	if (clearMode>0) magClear(clearMode);
+	else
+	{
+		glError = GL_INVALID_ENUM;
+		GenerateGLError(glError,"Maggie Chip only support GL_LEQUAL for glDepthFunc\n");
+	}
 }
 
 void glMatrixMode(int mode)
@@ -327,6 +416,11 @@ void glMatrixMode(int mode)
     {
         currentMatrix = &projectionMatrix;
     }
+	else
+	{
+		glError = GL_INVALID_ENUM;
+		GenerateGLError(glError,"glMatrixMode called with invalid parameter, only GL_MODELVIEW and GL_PROJECTION are valid\n");	
+	}
 }
 
 void glLoadIdentity()
@@ -344,6 +438,11 @@ void glLoadMatrix(float *matrix) {
 
 void glGetFloatv(int pname, float* params)
 {
+	if (params==0)
+	{
+		glError = GL_INVALID_VALUE;
+		GenerateGLError(glError,"Second Parameter for glGetFloatv was null\n");		
+	}
     if (pname == GL_MODELVIEW_MATRIX)
     {
         // Copy the values from the provided matrix to params
@@ -353,6 +452,14 @@ void glGetFloatv(int pname, float* params)
             params[i] = matrix.m[i / 4][i % 4];
         }
     }
+	else 
+	{
+		char error[1024];
+		
+		glError = GL_INVALID_ENUM;
+		sprintf(error,"glGetFloatv was called with incompatible parameter %d\n",pname);
+		GenerateGLError(glError,error);	
+	}
 }
 
 void glOrtho(float left, float right, float bottom, float top, float nearVal, float farVal) 
@@ -413,6 +520,11 @@ void glPopMatrix()
         currentMatrix = matrixStack.top();
         matrixStack.pop();
     }
+	else 
+	{
+		glError = GL_INVALID_OPERATION;
+		GenerateGLError(glError,"Matrix Stack was empty on call of glPopMatrix\n");		
+	}
 }
 
 
@@ -427,6 +539,11 @@ void glTexCoord2f(float x, float y)
 	{
 		magTexCoord(currentTexture,x,y);
 	}
+	else 
+	{
+		glError = GL_INVALID_OPERATION;
+		GenerateGLError(glError,"No Texture was bound on call of glTexCoord2f\n");		
+	}
 }
 
 void glBindTexture(int i, int j)
@@ -438,6 +555,14 @@ void glBindTexture(int i, int j)
 		{
 			currentTexture = num->second;
 			magSetTexture(0,currentTexture);
+		}
+		else 
+		{
+			char error[1024];
+			
+			sprintf(error,"No Texture %d was found on glBindTexture\n",i);
+			glError = GL_INVALID_OPERATION;
+			GenerateGLError(glError,error);			
 		}
 	}
 }
@@ -457,7 +582,16 @@ void glTexImage2D(int i, int j, int k, int l, int m, int n, int o, int p, void *
 		if (l*m==64*64) texHandle = magAllocateTexture(6);
 		else if (l*m==128*128) texHandle = magAllocateTexture(7);
 		else if (l*m==256*256) texHandle = magAllocateTexture(8);
-		if (!texHandle) return;
+		if (!texHandle) 
+		{
+			char error[1024];
+			
+			sprintf(error,"Could not allocate Texture in call to glexImage2D(%d,%d,%d,%d,%d,%d,%d,%d,ptr)",i,j,k,l,m,n,o,p);
+			glError = GL_OUT_OF_MEMORY;
+			GenerateGLError(glError,error);	
+	
+			return;
+		}
 		vampTextureMap->insert(std::make_pair(maxVampTex, texHandle));
 		maxVampTex++;
 		magUploadTexture(texHandle, j, pixels, 0);
@@ -479,7 +613,20 @@ void glDeleteTextures(int num, void *v)
 				vampTextureMap->erase(it);
 				magFreeTexture(number);
 			}
+			else 
+			{
+				char error[1024];
+				
+				glError = GL_INVALID_OPERATION;
+				sprintf(error,"Could not find texture %d\n",texnum);
+				GenerateGLError(glError,error);					
+			}
 		}
+	}
+	else 
+	{
+		glError = GL_INVALID_OPERATION;
+		GenerateGLError(glError,"glDeleteTextures currently only supports if first parameter is 1\n");
 	}
 }
 
@@ -525,6 +672,11 @@ void glColor4ubv(unsigned char *col)
 	{
 		glColor4ub(col[0],col[1],col[2],col[3]);
 	}
+	else 
+	{
+		glError = GL_INVALID_VALUE;
+		GenerateGLError(glError,"Vector for glColor4ubv is null\n");	
+	}
 }
 
 void glColor4fv(float *v)
@@ -533,6 +685,11 @@ void glColor4fv(float *v)
 	{
 		glColor4f(v[0],v[1],v[2],v[3]);
 	}
+	else 
+	{
+		glError = GL_INVALID_VALUE;
+		GenerateGLError(glError,"Vector for glColor4fv is null\n");			
+	}
 }
 
 void glColor3fv(float *v)
@@ -540,5 +697,10 @@ void glColor3fv(float *v)
 	if (v!=0)
 	{
 		glColor3f(v[0],v[1],v[2]);
+	}
+	else 
+	{
+		glError = GL_INVALID_VALUE;
+		GenerateGLError(glError,"Vector for glColor3fv is null\n");			
 	}
 }

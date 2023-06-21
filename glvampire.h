@@ -63,11 +63,11 @@ void glPolygonMode(int i, int j); // DONE
 // States
 
 void glEnable(int i); 
-void glDisable(int i); 
+void glDisable(int i);
 
 // Handling, a lot of it can be removed
 
-int glGetError();
+int glGetError(); // DONE
 void glBegin(int i); // DONE
 void glEnd(); // DONE
 
@@ -176,8 +176,24 @@ char *glGetString(int i);
 #define GL_MODELVIEW_MATRIX 77
 #define GL_SCISSOR_TEST 78
 #define GL_LINES 79
+#define GL_DEBUG_SOURCE_API 80
+#define GL_DEBUG_SEVERITY_HIGH 81
+#define GL_DEBUG_SEVERITY_LOW 82
+
+#define GL_NO_ERROR 0
+#define GL_INVALID_ENUM 0x500
+#define GL_INVALID_VALUE 0x501
+#define GL_INVALID_OPERATION 0x502
+#define GL_STACK_OVERFLOW 0x503
+#define GL_STACK_UNDERFLOW 0x504
+#define GL_OUT_OF_MEMORY 0x505
+#define GL_INVALID_FRAMEBUFFER_OPERATION 0x506
+#define GL_CONTEXT_LOST 0x507
+#define GL_TABLE_TOO_LARGE 0x8031
 
 #define GLfloat float
 #define GLint int
 #define GLdouble double
+
+typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
 #endif
