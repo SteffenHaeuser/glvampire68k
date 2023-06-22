@@ -2,6 +2,13 @@
 #define GL_VAMPIRE_H
 
 #include <proto/Maggie.h>
+#include <maggie_vec.h>
+#include <maggie_flags.h>
+#include <maggie_vertex.h>
+
+#include <map>
+#include <stack>
+#include <vector>
 
 typedef enum {
     GL_MODULATE=11,
@@ -196,4 +203,35 @@ char *glGetString(int i);
 #define GLdouble double
 
 typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
+
+using MatrixStack = std::stack<mat4*>;
+
+struct GLVampContext
+{
+	struct Library *MaggieBase = 0;	
+	int vampBpp;
+	int vampCurrentBuffer;
+	int currentTexture;
+	int vampDrawModes;
+	mat4 modelViewMatrix;     
+	mat4 projectionMatrix;  
+	mat4 worldMatrix;
+	mat4 *currentMatrix;
+	int vampWidth;
+	int vampHeight;
+	int maxVampTex;
+	UBYTE *screenMem;
+	int screenMemSize;
+	std::map<int,int> *vampTextureMap;
+	MatrixStack matrixStack; 
+	UWORD *vampScreenPixels[3];	
+	std::vector<MaggieVertex> vertices;	
+	int currentMode;	
+	int maggieMode;	
+	int oldMode;
+	int oldScreen;
+	int glError;
+	DebugMessageCallbackFunc glDebugMessage;
+};
+
 #endif
