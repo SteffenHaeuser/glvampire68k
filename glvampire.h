@@ -186,6 +186,7 @@ char *glGetString(int i);
 #define GL_DEBUG_SOURCE_API 80
 #define GL_DEBUG_SEVERITY_HIGH 81
 #define GL_DEBUG_SEVERITY_LOW 82
+#define GL_SOLID_FORMAT 83
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500

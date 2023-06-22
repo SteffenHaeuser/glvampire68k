@@ -6,10 +6,10 @@
 #include <maggie_flags.h>
 #include <maggie_vertex.h>
 
-struct GLVampContext vampContext;
+struct GLVampContext vamp_Context;
 void GLGenerateError(GLVampContext *vampContext, int type, const char* message);
 
-struct GLVampContext *GLUOpenDisplay(struct GLVampContext *vampContext, int BPP, int maggieMode, int width, int height)
+int GLUOpenDisplay(struct GLVampContext *vampContext, int BPP, int maggieMode, int width, int height)
 {
 	volatile UWORD *SAGA_ScreenMode = (UWORD *)0xdff1f4;
 	volatile UWORD *SAGA_ScreenModeRead = (UWORD *)0xdfe1f4;
@@ -53,7 +53,7 @@ struct GLVampContext *GLUOpenDisplay(struct GLVampContext *vampContext, int BPP,
 	vampContext->maggieMode = maggieMode; // Z.B. 0x0b02 für 640x360x16bpp
 	*SAGA_ScreenMode = maggieMode;	
 	
-	return vampContext;
+	return 1;
 }
 
 void GLUCloseDisplay(struct GLVampContext *vampContext)

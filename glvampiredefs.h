@@ -1,6 +1,47 @@
 #ifndef GLVAMPIREDEFS_H
 #define GLVAMPIREDEFS_H
 
+int GLUOpenDisplay(struct GLVampContext *vampContext, int BPP, int maggieMode, int width, int height);
+void GLUCloseDisplay(struct GLVampContext *vampContext);
+void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam);
+int GLGetError(struct GLVampContext *vampContext);
+void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height);
+void GLBegin(struct GLVampContext *vampContext, int mode);
+void GLEnd(struct GLVampContext *vampContext);
+void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z);
+void GLVertex2f(struct GLVampContext *vampContext, float x, float y);
+void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z);
+void GLVertex3fv(struct GLVampContext *vampContext, float *vec);
+void GLCullFace(struct GLVampContext *vampContext,int i);
+void GLDepthFunc(struct GLVampContext *vampContext, int i);
+void GLDepthMask(struct GLVampContext *vampContext, int i);
+void GLDrawBuffer(struct GLVampContext *vampContext, int i);
+void GLUBeginFrame(struct GLVampContext *vampContext);
+void GLUEndFrame(struct GLVampContext *vampContext);
+void GLPolygonMode(struct GLVampContext *vampContext, int i, int j);
+void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, float l);
+void GLClear(struct GLVampContext *vampContext, unsigned int i);
+void GLMatrixMode(struct GLVampContext *vampContext, int mode);
+void GLLoadIdentity(struct GLVampContext *vampContext);
+void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix);
+void GLGetFloatv(struct GLVampContext *vampContext, int pname, float* params);
+void GLOrtho(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal);
+void GLRotatef(struct GLVampContext *vampContext, float angle, float x, float y, float z);
+void GLFrustum(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal);
+void GLPushMatrix(struct GLVampContext *vampContext);
+void GLPopMatrix(struct GLVampContext *vampContext);
+void GLTranslatef(struct GLVampContext *vampContext,float x, float y, float z);
+void GLTexCoord2f(struct GLVampContext *vampContext, float x, float y);
+void GLBindTexture(struct GLVampContext *vampContext, int i, int j);
+void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels);
+void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v);
+void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a);
+void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z);
+void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l);
+void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col);
+void GLColor4fv(struct GLVampContext *vampContext, float *v);
+void GLColor3fv(struct GLVampContext *vampContext, float *v);
+
 #define glGetError() GLGetError(&vampContext);
 #define gluOpenDisplay(BPP,maggieMode,width,height) GLUOpenDisplay(&vampContext,BPP,maggieMode,width,height);
 #define gluCloseDisplay() GLUCloseDisplay(&vampContext);
@@ -42,5 +83,7 @@
 #define glColor3fv(v) GLColor3fv(&vampContext,v);
 #define GenerateGLError(type,msg) GLGenerateError(vampContext,type,msg);
 #define glDebugMessageCallback(callback,userparam) GLDebugMessageCallback(&vampContext,callback,userparam);
+
+extern struct GLVampContext vampContext;
 
 #endif

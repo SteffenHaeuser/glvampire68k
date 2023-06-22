@@ -1,5 +1,5 @@
 #include "glvampire.h"
-#include "glvampiredefs.h"
+//#include "glvampiredefs.h"
 
 #include <proto/exec.h>
 #include <maggie_vec.h>
@@ -371,7 +371,8 @@ void GLLoadIdentity(struct GLVampContext *vampContext)
 	mat4_identity(vampContext->currentMatrix);
 }
 
-void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix) {
+void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix) 
+{
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
             vampContext->currentMatrix->m[i][j] = matrix[i * 4 + j];
