@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <proto/exec.h>
+#include <proto/Maggie.h>
 #include <maggie_vec.h>
 #include <maggie_flags.h>
 #include <maggie_vertex.h>

@@ -2,17 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <proto/exec.h>
-#include <proto/graphics.h>
 #include <proto/lowlevel.h>
-#include <proto/Picasso96.h>
-#include <exec/execbase.h>
 
-#include <proto/Maggie.h>
 #include <maggie_vec.h>
 #include <maggie_vertex.h>
-#include <maggie_flags.h>
+
 #include "glvampire.h"
-#include "glvampiredefs.h"
+
 
 # define MAGGIE_MODE 0x0b02		// 640x360x16bpp
 

@@ -1,10 +1,7 @@
 #ifndef GL_VAMPIRE_H
 #define GL_VAMPIRE_H
 
-#include <proto/Maggie.h>
 #include <maggie_vec.h>
-#include <maggie_flags.h>
-#include <maggie_vertex.h>
 #include <intuition/intuition.h>
 
 typedef enum {
@@ -232,5 +229,7 @@ struct GLVampContext
 	int useWindow;
 	DebugMessageCallbackFunc glDebugMessage;
 };
+
+#include "glvampiredefs.h"
 
 #endif

@@ -9,6 +9,7 @@
 #include <proto/lowlevel.h>
 #include <proto/cybergraphics.h>
 #include <proto/intuition.h>
+#include <proto/Maggie.h>
 #include <cybergraphics/cybergraphics.h>
 #include <intuition/intuition.h>
 #include <maggie_vec.h>
