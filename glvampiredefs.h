@@ -1,7 +1,9 @@
 #ifndef GLVAMPIREDEFS_H
 #define GLVAMPIREDEFS_H
 
-int GLUOpenDisplay(struct GLVampContext *vampContext, int BPP, int maggieMode, int width, int height);
+#include <utility/tagitem.h>
+
+int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags);
 void GLUCloseDisplay(struct GLVampContext *vampContext);
 void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam);
 int GLGetError(struct GLVampContext *vampContext);
@@ -42,8 +44,17 @@ void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col);
 void GLColor4fv(struct GLVampContext *vampContext, float *v);
 void GLColor3fv(struct GLVampContext *vampContext, float *v);
 
+#define VAMPOD_BPP TAG_USER+100
+#define VAMPOD_MODE TAG_USER+101
+#define VAMPOD_WIDTH TAG_USER+102
+#define VAMPOD_HEIGHT TAG_USER+103
+#define VAMPOD_WINDOW TAG_USER+104
+#define VAMPOD_WINHANDLE TAG_USER+105
+#define VAMPOD_USEINT TAG_USER+106
+#define VAMPOD_WINDOWTITLE TAG_USER+107
+
 #define glGetError() GLGetError(&vampContext);
-#define gluOpenDisplay(BPP,maggieMode,width,height) GLUOpenDisplay(&vampContext,BPP,maggieMode,width,height);
+#define gluOpenDisplayTags(tags) GLUOpenDisplayTags(&vampContext,tags);
 #define gluCloseDisplay() GLUCloseDisplay(&vampContext);
 #define glViewport(x,y,width,height) GLViewport(&vampContext,x,y,width,height);
 #define glBegin(mode) GLBegin(&vampContext,mode);

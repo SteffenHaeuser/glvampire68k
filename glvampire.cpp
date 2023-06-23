@@ -1,5 +1,9 @@
 #include "glvampire.h"
-//#include "glvampiredefs.h"
+#include "glvampiredefs.h"
+
+#include <map>
+#include <stack>
+#include <vector>
 
 #include <proto/exec.h>
 #include <maggie_vec.h>
@@ -28,6 +32,12 @@ int GLGetError(struct GLVampContext *vampContext)
 
 void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height)
 {
+	if ((width!=vampContext->vampWidth)||(height!=vampContext->vampHeight))
+	{
+		vampContext->glError = GL_INVALID_OPERATION;
+		GenerateGLError(GL_INVALID_OPERATION,"Called glViewport with invalid size, needs to be the same size as when calling gluOpenDisplayTags\n");
+        return;
+	}
 	if (vampContext->screenMemSize!=0)
 	{
 		FreeMem(vampContext->screenMem, vampContext->screenMemSize);		
@@ -54,6 +64,9 @@ void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int 
 void GLBegin(struct GLVampContext *vampContext, int mode) 
 {
 	char error[1024];
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
 	
     switch (mode) {
         case GL_QUADS:
@@ -63,7 +76,7 @@ void GLBegin(struct GLVampContext *vampContext, int mode)
         case GL_LINES:
         case GL_TRIANGLE_STRIP:
             vampContext->currentMode = static_cast<int>(mode);
-            vampContext->vertices.clear();
+            vertices->clear();
             break;
         default:
 			vampContext->glError = GL_INVALID_ENUM;
@@ -76,52 +89,56 @@ void GLBegin(struct GLVampContext *vampContext, int mode)
 
 void GLEnd(struct GLVampContext *vampContext) 
 {	
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
     switch (vampContext->currentMode) {
         case GL_QUADS:
-            if (vampContext->vertices.size() % 4 != 0) {
+            if (vertices->size() % 4 != 0) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(GL_INVALID_VALUE,"Number of vertices for GL_QUADS not divisible by 4\n");
                 break;
             }
             {
-                std::vector<unsigned short> indices(vampContext->vertices.size());
+                std::vector<unsigned short> indices(vertices->size());
                 for (size_t i = 0; i < indices.size(); i++) {
                     indices[i] = static_cast<unsigned short>(i);
                 }
-                magDrawIndexedPolygonsUP(&vampContext->vertices[0], static_cast<unsigned short>(vampContext->vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
+                magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
             }
 			break;
         case GL_POLYGON:
-            if (vampContext->vertices.size() < 3) {
+            if (vertices->size() < 3) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for polygon\n");
                 break;
             }
             {
-                std::vector<unsigned short> indices(vampContext->vertices.size());
+                std::vector<unsigned short> indices(vertices->size());
                 for (size_t i = 0; i < indices.size(); i++) {
                     indices[i] = static_cast<unsigned short>(i);
                 }
-                magDrawIndexedPolygonsUP(&vampContext->vertices[0], static_cast<unsigned short>(vampContext->vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
+                magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
             }
             break;
         case GL_TRIANGLE_FAN:
-            if (vampContext->vertices.size() < 3) {
+            if (vertices->size() < 3) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for GL_TRIANGLE_FAN\n");
                 break;
             }
             {
-                std::vector<unsigned short> indices(vampContext->vertices.size());
+                std::vector<unsigned short> indices(vertices->size());
                 indices[0] = 0;
                 for (size_t i = 1; i < indices.size(); i++) {
                     indices[i] = static_cast<unsigned short>(i);
                 }
-                magDrawIndexedTrianglesUP(&vampContext->vertices[0], static_cast<unsigned short>(vampContext->vertices.size()), &indices[0], static_cast<unsigned short>(indices.size()));
+                magDrawIndexedTrianglesUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
             }
             break;
         case GL_LINE_STRIP:
-            if (vampContext->vertices.size() < 2) {
+            if (vertices->size() < 2) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for GL_LINE_STRIP\n");
                 break;
@@ -129,16 +146,16 @@ void GLEnd(struct GLVampContext *vampContext)
             {
                 struct SpanPosition start, end;
                 // Initialisierung der Start- und Endposition entsprechend der Vertices
-                start.u = vampContext->vertices[0].pos.x;
-                start.v = vampContext->vertices[0].pos.y;
-                end.u = vampContext->vertices[vampContext->vertices.size() - 1].pos.x;
-                end.v = vampContext->vertices[vampContext->vertices.size() - 1].pos.y;
+                start.u = (*vertices)[0].pos.x;
+                start.v = (*vertices)[0].pos.y;
+                end.u = (*vertices)[vertices->size() - 1].pos.x;
+                end.v = (*vertices)[vertices->size() - 1].pos.y;
                 magDrawLinearSpan(&start, &end);
             }
             break;
         case GL_LINES:
 #if 0		
-            if (vampContext->vertices.size() % 2 != 0) {
+            if (vertices->size() % 2 != 0) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Number of Vertices for GL_LINES not divisible by 2\n");
                 break;
@@ -146,24 +163,24 @@ void GLEnd(struct GLVampContext *vampContext)
             {
                 struct MaggieClippedVertex start, end;
                 // Initialisierung des Start- und Endvertices entsprechend den Vertices
-                start.pos = vampContext->vertices[0].pos;
-                end.pos = vampContext->vertices[vampContext->vertices.size() - 1].pos;
+                start.pos = (*vertices)[0].pos;
+                end.pos = (*vertices)[vertices->size() - 1].pos;
                 magDrawSpan(&start, &end);
             }
 #else
-            if (vampContext->vertices.size() % 2 != 0) {
+            if (vertices->size() % 2 != 0) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Number of Vertices for GL_LINES not divisible by 2\n");
                 break;
             }
             {
-                for (size_t i = 0; i < vampContext->vertices.size(); i += 2) {
+                for (size_t i = 0; i < vertices->size(); i += 2) {
                     struct SpanPosition start, end;
                     // Initialisierung der Start- und Endposition entsprechend der Vertices
-                    start.u = vampContext->vertices[i].pos.x;
-                    start.v = vampContext->vertices[i].pos.y;
-                    end.u = vampContext->vertices[i + 1].pos.x;
-                    end.v = vampContext->vertices[i + 1].pos.y;
+                    start.u = (*vertices)[i].pos.x;
+                    start.v = (*vertices)[i].pos.y;
+                    end.u = (*vertices)[i + 1].pos.x;
+                    end.v = (*vertices)[i + 1].pos.y;
                     magDrawLinearSpan(&start, &end);
                 }
             }
@@ -171,7 +188,7 @@ void GLEnd(struct GLVampContext *vampContext)
 #endif			
             break;
         case GL_TRIANGLE_STRIP:
-            if (vampContext->vertices.size() < 3) {
+            if (vertices->size() < 3) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for GL_TRIANGLE_STRIP\n");
                 break;
@@ -179,10 +196,10 @@ void GLEnd(struct GLVampContext *vampContext)
             {
                 struct SpanPosition start, end;
                 // Initialisierung der Start- und Endposition entsprechend der Vertices
-                start.u = vampContext->vertices[0].pos.x;
-                start.v = vampContext->vertices[0].pos.y;
-                end.u = vampContext->vertices[vampContext->vertices.size() - 1].pos.x;
-                end.v = vampContext->vertices[vampContext->vertices.size() - 1].pos.y;
+                start.u = (*vertices)[0].pos.x;
+                start.v = (*vertices)[0].pos.y;
+                end.u = (*vertices)[vertices->size() - 1].pos.x;
+                end.v = (*vertices)[vertices->size() - 1].pos.y;
                 magDrawLinearSpan(&start, &end);
             }
             break;
@@ -195,23 +212,35 @@ void GLEnd(struct GLVampContext *vampContext)
 void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
     MaggieVertex vertex;
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
     vertex.pos = {x, y, z};
-    vampContext->vertices.push_back(vertex);	
+    vertices->push_back(vertex);	
 	magVertex(x,y,z);
 }
 
 void GLVertex2f(struct GLVampContext *vampContext, float x, float y)
 {
     MaggieVertex vertex;
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
     vertex.pos = {x, y, 0.0f};
-    vampContext->vertices.push_back(vertex);	
+    vertices->push_back(vertex);	
 	magVertex(x,y,0.0f);
 }
 
 void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
-    if (!vampContext->vertices.empty()) {
-        MaggieVertex& currentVertex = vampContext->vertices.back();
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+    if (!vertices->empty()) {
+        MaggieVertex& currentVertex = vertices->back();
         currentVertex.normal = {x, y, z};
     }	
 	else
@@ -224,11 +253,15 @@ void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
 
 void GLVertex3fv(struct GLVampContext *vampContext, float *vec)
 {
+	std::vector<MaggieVertex> *vertices;
+	
+	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
 	if (vec!=0)
 	{
 		MaggieVertex vertex;
 		vertex.pos = {vec[0],vec[1],vec[2]};
-		vampContext->vertices.push_back(vertex);		
+		vertices->push_back(vertex);		
 		magVertex(vec[0],vec[1],vec[2]);
 	}
 	else
@@ -275,49 +308,6 @@ void GLDepthMask(struct GLVampContext *vampContext, int i)
 
 void GLDrawBuffer(struct GLVampContext *vampContext, int i)
 {
-}
-
-void GLUBeginFrame(struct GLVampContext *vampContext)
-{
-	volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
-	
-	int i;
-	float matrix[16];
-	if (vampContext->vampScreenPixels[vampContext->vampCurrentBuffer]==0) 
-	{
-		// glViewport was not yet called !!!
-		return;
-	}
-	magBeginScene();
-	*SAGA_ChunkyData = (ULONG)vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];
-	vampContext->vampCurrentBuffer = (vampContext->vampCurrentBuffer + 1) % 3;
-	APTR pixels = vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];	
-	magSetDrawMode(vampContext->vampDrawModes);
-	magSetScreenMemory((void **)pixels, vampContext->vampWidth, vampContext->vampHeight);		
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->projectionMatrix.m[i / 4][i % 4];
-	}
-	magSetPerspectiveMatrix(matrix);
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->modelViewMatrix.m[i / 4][i % 4];
-	}
-	magSetViewMatrix(matrix);	
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->worldMatrix.m[i / 4][i % 4];
-	}	
-	magSetWorldMatrix(matrix);
-	if (vampContext->currentTexture!=-1)
-	{
-		magSetTexture(0,vampContext->currentTexture);
-	}
-}
-
-void GLUEndFrame(struct GLVampContext *vampContext)
-{
-	magEndScene();
 }
 
 void GLPolygonMode(struct GLVampContext *vampContext, int i, int j)
@@ -452,15 +442,17 @@ void GLFrustum(struct GLVampContext *vampContext, float left, float right, float
 
 void GLPushMatrix(struct GLVampContext *vampContext)
 {
-    vampContext->matrixStack.push(vampContext->currentMatrix);
+	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)vampContext->matrixStack;
+    matrixStack->push(vampContext->currentMatrix);
 }
 
 void GLPopMatrix(struct GLVampContext *vampContext)
 {
-    if (!vampContext->matrixStack.empty())
+	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)(vampContext->matrixStack);
+    if (!matrixStack->empty())
     {
-        vampContext->currentMatrix = vampContext->matrixStack.top();
-        vampContext->matrixStack.pop();
+        vampContext->currentMatrix = matrixStack->top();
+        matrixStack->pop();
     }
 	else 
 	{
@@ -491,8 +483,9 @@ void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 {
 	if (i==GL_TEXTURE_2D)
 	{
-		auto num = vampContext->vampTextureMap->find(j);
-		if (num!=vampContext->vampTextureMap->end())
+		std::map<int,int> *vampTextureMap = (std::map<int,int> *)vampContext->vampTextureMap;
+		auto num = vampTextureMap->find(j);
+		if (num!=vampTextureMap->end())
 		{
 			vampContext->currentTexture = num->second;
 			magSetTexture(0,vampContext->currentTexture);
@@ -520,6 +513,8 @@ void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l,
 	}
 	if (i==GL_TEXTURE_2D)
 	{
+		std::map<int,int> *vampTextureMap;
+		vampTextureMap = (std::map<int,int>*)vampContext->vampTextureMap;
 		if (l*m==64*64) texHandle = magAllocateTexture(6);
 		else if (l*m==128*128) texHandle = magAllocateTexture(7);
 		else if (l*m==256*256) texHandle = magAllocateTexture(8);
@@ -533,7 +528,7 @@ void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l,
 	
 			return;
 		}
-		vampContext->vampTextureMap->insert(std::make_pair(vampContext->maxVampTex, texHandle));
+		vampTextureMap->insert(std::make_pair(vampContext->maxVampTex, texHandle));
 		vampContext->maxVampTex++;
 		magUploadTexture(texHandle, j, pixels, 0);
 	}
@@ -547,11 +542,13 @@ void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v)
 		
 		if (texnum!=0)
 		{
-			auto it = vampContext->vampTextureMap->find(texnum);
-			if (it != vampContext->vampTextureMap->end()) 
+			std::map<int,int> *vampTextureMap;
+			vampTextureMap = (std::map<int,int>*)vampContext->vampTextureMap;
+			auto it = vampTextureMap->find(texnum);
+			if (it != vampTextureMap->end()) 
 			{
 				int number = it->second;
-				vampContext->vampTextureMap->erase(it);
+				vampTextureMap->erase(it);
 				magFreeTexture(number);
 			}
 			else 

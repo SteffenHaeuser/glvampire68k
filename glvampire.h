@@ -5,10 +5,7 @@
 #include <maggie_vec.h>
 #include <maggie_flags.h>
 #include <maggie_vertex.h>
-
-#include <map>
-#include <stack>
-#include <vector>
+#include <intuition/intuition.h>
 
 typedef enum {
     GL_MODULATE=11,
@@ -205,11 +202,9 @@ char *glGetString(int i);
 
 typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
 
-using MatrixStack = std::stack<mat4*>;
-
 struct GLVampContext
 {
-	struct Library *MaggieBase = 0;	
+	struct Library *MaggieBase;	
 	int vampBpp;
 	int vampCurrentBuffer;
 	int currentTexture;
@@ -223,15 +218,19 @@ struct GLVampContext
 	int maxVampTex;
 	UBYTE *screenMem;
 	int screenMemSize;
-	std::map<int,int> *vampTextureMap;
-	MatrixStack matrixStack; 
+	void *vampTextureMap;
+	void *matrixStack; 
 	UWORD *vampScreenPixels[3];	
-	std::vector<MaggieVertex> vertices;	
+	void *vertices;	
 	int currentMode;	
 	int maggieMode;	
 	int oldMode;
 	int oldScreen;
 	int glError;
+	int useInterrupt;
+	void *interrupt;
+	struct Window *window;
+	int useWindow;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 
