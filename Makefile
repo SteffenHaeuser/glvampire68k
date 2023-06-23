@@ -1,4 +1,4 @@
-OBJS = glvampire.o glvampirelib.o immediate2.o
+OBJS = glvampirelib.o immediate2.o glErrors.o glSetup.o glColors.o glMatrix.o glDraw.o glVertex.o glZBuffer.o glTextures.o
 
 EXE = immediate2.exe
 

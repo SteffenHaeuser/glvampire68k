@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void GLGenerateError(struct GLVampContext *vampContext, int type, const char* message);
 int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags);
 void GLUCloseDisplay(struct GLVampContext *vampContext);
 void GLUBeginFrame(struct GLVampContext *vampContext);

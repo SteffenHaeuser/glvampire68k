@@ -19,7 +19,6 @@ struct Library *MaggieBase = 0;
 struct Library *CyberGfxBase = 0;
 
 struct GLVampContext vampContext;
-extern "C" void GLGenerateError(GLVampContext *vampContext, int type, const char* message);
 
 static volatile int vblPassed;
 
