@@ -1,44 +1,38 @@
-OBJS = glvampirelib.o immediate2.o glErrors.o glSetup.o glColors.o glMatrix.o glDraw.o glVertex.o glZBuffer.o glTextures.o
+CC = m68k-amigaos-gcc
+AR = m68k-amigaos-ar
+CFLAGS = -Wall -Wextra -fomit-frame-pointer -noixemul -mcpu=68030 -m68881 -O2 -ffast-math
+LIBS = -lm -lstdc++ -lamiga
 
-EXE = immediate2.exe
+LIBS_GL4VAMPIRE = -lgl4vampire
+LIBS_GL = -lGL
+
+OBJS_GL4VAMPIRE = glvampirelib.o
+OBJS_GL = glErrors.o glSetup.o glColors.o glMatrix.o glDraw.o glVertex.o glZBuffer.o glTextures.o
+OBJS_EXE = immediate2.o
+
+EXE = immediate2
 
 OTHER = 
 
-CCM68K = gcc -m68060 -fomit-frame-pointer -I/ade/include -noixemul -g -gstabs
-
-CC603 = ppc-amigaos-gcc -V 2.95.1 -mcpu=603e -mmultiple -warpup
-CC604 = ppc-amigaos-gcc -V 2.95.1 -mcpu=604e -mmultiple -warpup
-CC750 = m68k-amigaos-gcc -fomit-frame-pointer -noixemul -mcpu=68030 -m68881
-
-CC = $(CC750)
-
-LD = m68k-amigaos-ld
-
-CODEGEN = 
-
-OPTIMIZE = -O2 -ffast-math
-
-CFLAGS= $(CODEGEN) $(OPTIMIZE)
-CFLAGS_NOOPT = $(CODEGEN)
-
-LIBS = -lm -lamiga -lstdc++
-
 %.o : %.c
-	$(CC) $(CFLAGS) -S $< -o $*.s
-	$(CC) $(CFLAGS) -c $*.s -o $*.o
-	
+	$(CC) $(CFLAGS) -c $< -o $@
+
 %.o : %.cpp
-	$(CC) $(CFLAGS) -S $< -o $*.s
-	$(CC) $(CFLAGS) -c $*.s -o $*.o	
+	$(CC) $(CFLAGS) -c $< -o $@
 
-ASMS = $(OBJS:.o=.s)
+all: libgl4vampire.a libGL.a $(EXE)
 
-$(EXE) : $(OBJS) 
-	$(CC) $(OBJS) $(OBJSCPP) $(LIBS) -o immediate2.exe
+libgl4vampire.a: $(OBJS_GL4VAMPIRE)
+	$(AR) rcs $@ $(OBJS_GL4VAMPIRE)
+
+libGL.a: $(OBJS_GL)
+	$(AR) rcs $@ $(OBJS_GL)
+
+$(EXE) : $(OBJS_EXE) libgl4vampire.a libGL.a
+	$(CC) $(OBJS_EXE) -L. -lgl4vampire -L. -lGL $(LIBS) -o $@
 
 depend : 
-	$(CC) $(CFLAGS) -MM $(OBJS:.o=.c) >depend
+	$(CC) $(CFLAGS) -MM $(OBJS_GL:.o=.c) >depend
 
 clean :
-	rm $(EXE) $(OBJS) $(ASMS) $(OTHER) depend
-
+	rm -f $(EXE) libgl4vampire.a libGL.a $(OBJS_GL4VAMPIRE) $(OBJS_GL) $(OBJS_EXE) $(ASMS) $(OTHER) depend

@@ -12,7 +12,7 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam)
+extern "C" void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, __attribute__((unused)) const void* userParam)
 {
     vampContext->glDebugMessage = callback;
 }

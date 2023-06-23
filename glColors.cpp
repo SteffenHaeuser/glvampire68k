@@ -15,7 +15,7 @@ extern struct Library *MaggieBase;
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
-extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
+extern "C" void GLColor4f(__attribute__((unused)) struct GLVampContext *vampContext, float r, float g, float b, float a)
 {
 	unsigned char rdec = (unsigned char)r;
 	unsigned char gdec = (unsigned char)g;
@@ -27,7 +27,7 @@ extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, f
 	magColour(color);
 }
 
-extern "C" void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLColor3f(__attribute__((unused)) struct GLVampContext *vampContext, float x, float y, float z)
 {
 	unsigned char rdec = (unsigned char)x;
 	unsigned char gdec = (unsigned char)y;
@@ -39,7 +39,7 @@ extern "C" void GLColor3f(struct GLVampContext *vampContext, float x, float y, f
 	magColour(color);	
 }
 
-extern "C" void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
+extern "C" void GLColor4ub(__attribute__((unused)) struct GLVampContext *vampContext, int i, int j, int k, int l)
 {
 	unsigned char rdec = (unsigned char)i;
 	unsigned char gdec = (unsigned char)j;
@@ -90,7 +90,7 @@ extern "C" void GLColor3fv(struct GLVampContext *vampContext, float *v)
 	}
 }
 
-extern "C" void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, float l)
+extern "C" void GLClearColor(__attribute__((unused)) struct GLVampContext *vampContext, float i, float j, float k, float l)
 {
 	unsigned int rgb;
 	

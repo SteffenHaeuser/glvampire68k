@@ -85,7 +85,7 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 
 extern "C" void GLUEndFrame(struct GLVampContext *vampContext)
 {
-	int borderWidth, borderHeight;
+	int borderWidth=0, borderHeight=0;
 	
 	if (vampContext->window)
 	{
@@ -120,7 +120,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	int maggieMode = -1;
 	int width = -1;
 	int height = -1;
-	char *name;
+	char *name=0;
 	
 	if (!tags)
 	{
@@ -131,6 +131,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	
 	vampContext->useInterrupt = 0;
 	
+	i = 0;
 	while ((tags[i].ti_Tag!=TAG_DONE)&&(tags[i].ti_Tag!=TAG_END))
 	{
 		switch (tags[i].ti_Tag)
@@ -172,6 +173,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 			default:
 				break;
 		}
+		i++;
 	}
 	
 	if ((width==640)&&(height==360)&&(maggieMode!=0x0b02))

@@ -38,11 +38,11 @@ extern "C" void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 extern "C" void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels)
 {
 	int texHandle = -1;
-	int pixsize = 0;
+	//int pixsize = 0;
 	switch(o)
 	{
 		case GL_RGBA:
-			if (p==GL_UNSIGNED_BYTE) pixsize = 4;
+			//if (p==GL_UNSIGNED_BYTE) pixsize = 4;
 			break;
 	}
 	if (i==GL_TEXTURE_2D)

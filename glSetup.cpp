@@ -13,7 +13,7 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height)
+extern "C" void GLViewport(struct GLVampContext *vampContext, __attribute__((unused)) int x, __attribute__((unused)) int y, int width, int height)
 {
 	if ((width!=vampContext->vampWidth)||(height!=vampContext->vampHeight))
 	{
@@ -56,11 +56,11 @@ extern "C" void GLCullFace(struct GLVampContext *vampContext,int i)
 	}
 }
 
-extern "C" void GLDrawBuffer(struct GLVampContext *vampContext, int i)
+extern "C" void GLDrawBuffer(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) int i)
 {
 }
 
-extern "C" void GLPolygonMode(struct GLVampContext *vampContext, int i, int j)
+extern "C" void GLPolygonMode(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) int i, __attribute__((unused)) int j)
 {
 }
 
