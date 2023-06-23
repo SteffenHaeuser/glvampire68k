@@ -3,8 +3,13 @@
 
 #include <utility/tagitem.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags);
 void GLUCloseDisplay(struct GLVampContext *vampContext);
+void GLUBeginFrame(struct GLVampContext *vampContext);
+void GLUEndFrame(struct GLVampContext *vampContext);
 void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam);
 int GLGetError(struct GLVampContext *vampContext);
 void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height);
@@ -18,8 +23,6 @@ void GLCullFace(struct GLVampContext *vampContext,int i);
 void GLDepthFunc(struct GLVampContext *vampContext, int i);
 void GLDepthMask(struct GLVampContext *vampContext, int i);
 void GLDrawBuffer(struct GLVampContext *vampContext, int i);
-void GLUBeginFrame(struct GLVampContext *vampContext);
-void GLUEndFrame(struct GLVampContext *vampContext);
 void GLPolygonMode(struct GLVampContext *vampContext, int i, int j);
 void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, float l);
 void GLClear(struct GLVampContext *vampContext, unsigned int i);
@@ -43,6 +46,9 @@ void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l);
 void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col);
 void GLColor4fv(struct GLVampContext *vampContext, float *v);
 void GLColor3fv(struct GLVampContext *vampContext, float *v);
+#ifdef __cplusplus
+}
+#endif
 
 #define VAMPOD_BPP TAG_USER+100
 #define VAMPOD_MODE TAG_USER+101

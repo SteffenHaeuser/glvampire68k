@@ -204,7 +204,6 @@ typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, 
 
 struct GLVampContext
 {
-	struct Library *MaggieBase;	
 	int vampBpp;
 	int vampCurrentBuffer;
 	int currentTexture;

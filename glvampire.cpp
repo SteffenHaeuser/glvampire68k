@@ -10,12 +10,14 @@
 #include <maggie_flags.h>
 #include <maggie_vertex.h>
 
-void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam)
+extern struct Library *MaggieBase;
+
+extern "C" void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam)
 {
     vampContext->glDebugMessage = callback;
 }
 
-void GLGenerateError(GLVampContext *vampContext, int type, const char* message)
+extern "C" void GLGenerateError(GLVampContext *vampContext, int type, const char* message)
 {
     if (vampContext->glDebugMessage != 0)
     {
@@ -25,12 +27,12 @@ void GLGenerateError(GLVampContext *vampContext, int type, const char* message)
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
-int GLGetError(struct GLVampContext *vampContext)
+extern "C" int GLGetError(struct GLVampContext *vampContext)
 {
 	return vampContext->glError;
 }
 
-void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height)
+extern "C" void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height)
 {
 	if ((width!=vampContext->vampWidth)||(height!=vampContext->vampHeight))
 	{
@@ -61,7 +63,7 @@ void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int 
 	vampContext->vampHeight = height;
 }
 
-void GLBegin(struct GLVampContext *vampContext, int mode) 
+extern "C" void GLBegin(struct GLVampContext *vampContext, int mode) 
 {
 	char error[1024];
 	std::vector<MaggieVertex> *vertices;
@@ -87,7 +89,7 @@ void GLBegin(struct GLVampContext *vampContext, int mode)
 	magBegin();
 }
 
-void GLEnd(struct GLVampContext *vampContext) 
+extern "C" void GLEnd(struct GLVampContext *vampContext) 
 {	
 	std::vector<MaggieVertex> *vertices;
 	
@@ -209,7 +211,7 @@ void GLEnd(struct GLVampContext *vampContext)
 	magEnd();
 }
 
-void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
     MaggieVertex vertex;
 	std::vector<MaggieVertex> *vertices;
@@ -221,7 +223,7 @@ void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z)
 	magVertex(x,y,z);
 }
 
-void GLVertex2f(struct GLVampContext *vampContext, float x, float y)
+extern "C" void GLVertex2f(struct GLVampContext *vampContext, float x, float y)
 {
     MaggieVertex vertex;
 	std::vector<MaggieVertex> *vertices;
@@ -233,7 +235,7 @@ void GLVertex2f(struct GLVampContext *vampContext, float x, float y)
 	magVertex(x,y,0.0f);
 }
 
-void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
 	std::vector<MaggieVertex> *vertices;
 	
@@ -251,7 +253,7 @@ void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
 	magNormal(x,y,z);
 }
 
-void GLVertex3fv(struct GLVampContext *vampContext, float *vec)
+extern "C" void GLVertex3fv(struct GLVampContext *vampContext, float *vec)
 {
 	std::vector<MaggieVertex> *vertices;
 	
@@ -271,7 +273,7 @@ void GLVertex3fv(struct GLVampContext *vampContext, float *vec)
 	}
 }
 
-void GLCullFace(struct GLVampContext *vampContext,int i)
+extern "C" void GLCullFace(struct GLVampContext *vampContext,int i)
 {
 	if (i==GL_FRONT)
 	{
@@ -283,7 +285,7 @@ void GLCullFace(struct GLVampContext *vampContext,int i)
 	}
 }
 
-void GLDepthFunc(struct GLVampContext *vampContext, int i)
+extern "C" void GLDepthFunc(struct GLVampContext *vampContext, int i)
 {
 	if (i!=GL_LEQUAL)
 	{
@@ -292,7 +294,7 @@ void GLDepthFunc(struct GLVampContext *vampContext, int i)
 	}
 }
 
-void GLDepthMask(struct GLVampContext *vampContext, int i)
+extern "C" void GLDepthMask(struct GLVampContext *vampContext, int i)
 {
 	// Not really correct implementation, DepthMask should only affect the writing, which currently is not possible on the Maggie Chipset
 	
@@ -306,15 +308,15 @@ void GLDepthMask(struct GLVampContext *vampContext, int i)
 	}
 }
 
-void GLDrawBuffer(struct GLVampContext *vampContext, int i)
+extern "C" void GLDrawBuffer(struct GLVampContext *vampContext, int i)
 {
 }
 
-void GLPolygonMode(struct GLVampContext *vampContext, int i, int j)
+extern "C" void GLPolygonMode(struct GLVampContext *vampContext, int i, int j)
 {
 }
 
-void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, float l)
+extern "C" void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, float l)
 {
 	unsigned int rgb;
 	
@@ -326,7 +328,7 @@ void GLClearColor(struct GLVampContext *vampContext, float i, float j, float k, 
 	magClearColor(rgb);
 }
 
-void GLClear(struct GLVampContext *vampContext, unsigned int i)
+extern "C" void GLClear(struct GLVampContext *vampContext, unsigned int i)
 {
 	unsigned short clearMode = 0;
 	if (i&GL_COLOR_BUFFER_BIT) clearMode|=MAG_CLEAR_COLOUR;
@@ -339,7 +341,7 @@ void GLClear(struct GLVampContext *vampContext, unsigned int i)
 	}
 }
 
-void GLMatrixMode(struct GLVampContext *vampContext, int mode)
+extern "C" void GLMatrixMode(struct GLVampContext *vampContext, int mode)
 {
     if (mode == GL_MODELVIEW)
     {
@@ -356,12 +358,12 @@ void GLMatrixMode(struct GLVampContext *vampContext, int mode)
 	}
 }
 
-void GLLoadIdentity(struct GLVampContext *vampContext)
+extern "C" void GLLoadIdentity(struct GLVampContext *vampContext)
 {
 	mat4_identity(vampContext->currentMatrix);
 }
 
-void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix) 
+extern "C" void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix) 
 {
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -370,7 +372,7 @@ void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix)
     }
 }
 
-void GLGetFloatv(struct GLVampContext *vampContext, int pname, float* params)
+extern "C" void GLGetFloatv(struct GLVampContext *vampContext, int pname, float* params)
 {
 	if (params==0)
 	{
@@ -396,7 +398,7 @@ void GLGetFloatv(struct GLVampContext *vampContext, int pname, float* params)
 	}
 }
 
-void GLOrtho(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal) 
+extern "C" void GLOrtho(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal) 
 {
     GLLoadIdentity(vampContext);
 
@@ -413,7 +415,7 @@ void GLOrtho(struct GLVampContext *vampContext, float left, float right, float b
 }
 
 
-void GLRotatef(struct GLVampContext *vampContext, float angle, float x, float y, float z) 
+extern "C" void GLRotatef(struct GLVampContext *vampContext, float angle, float x, float y, float z) 
 {
     GLLoadIdentity(vampContext);
 
@@ -422,7 +424,7 @@ void GLRotatef(struct GLVampContext *vampContext, float angle, float x, float y,
     mat4_rotateZ(vampContext->currentMatrix, z * angle);
 }
 
-void GLFrustum(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal) 
+extern "C" void GLFrustum(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal) 
 {
     float A = (right + left) / (right - left);
     float B = (top + bottom) / (top - bottom);
@@ -440,13 +442,13 @@ void GLFrustum(struct GLVampContext *vampContext, float left, float right, float
     vampContext->currentMatrix->m[3][2] = D;
 }
 
-void GLPushMatrix(struct GLVampContext *vampContext)
+extern "C" void GLPushMatrix(struct GLVampContext *vampContext)
 {
 	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)vampContext->matrixStack;
     matrixStack->push(vampContext->currentMatrix);
 }
 
-void GLPopMatrix(struct GLVampContext *vampContext)
+extern "C" void GLPopMatrix(struct GLVampContext *vampContext)
 {
 	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)(vampContext->matrixStack);
     if (!matrixStack->empty())
@@ -461,12 +463,12 @@ void GLPopMatrix(struct GLVampContext *vampContext)
 	}
 }
 
-void GLTranslatef(struct GLVampContext *vampContext,float x, float y, float z)
+extern "C" void GLTranslatef(struct GLVampContext *vampContext,float x, float y, float z)
 {
 	mat4_translate(vampContext->currentMatrix, x, y, z);
 }
 
-void GLTexCoord2f(struct GLVampContext *vampContext, float x, float y)
+extern "C" void GLTexCoord2f(struct GLVampContext *vampContext, float x, float y)
 {
 	if (vampContext->currentTexture!=-1)
 	{
@@ -479,7 +481,7 @@ void GLTexCoord2f(struct GLVampContext *vampContext, float x, float y)
 	}
 }
 
-void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
+extern "C" void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 {
 	if (i==GL_TEXTURE_2D)
 	{
@@ -501,7 +503,7 @@ void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 	}
 }
 
-void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels)
+extern "C" void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels)
 {
 	int texHandle = -1;
 	int pixsize = 0;
@@ -534,7 +536,7 @@ void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l,
 	}
 }
 
-void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v)
+extern "C" void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v)
 {
 	if (num==1)
 	{
@@ -568,7 +570,7 @@ void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v)
 	}
 }
 
-void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
+extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
 {
 	unsigned char rdec = (unsigned char)r;
 	unsigned char gdec = (unsigned char)g;
@@ -580,7 +582,7 @@ void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, flo
 	magColour(color);
 }
 
-void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
 	unsigned char rdec = (unsigned char)x;
 	unsigned char gdec = (unsigned char)y;
@@ -592,7 +594,7 @@ void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
 	magColour(color);	
 }
 
-void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
+extern "C" void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
 {
 	unsigned char rdec = (unsigned char)i;
 	unsigned char gdec = (unsigned char)j;
@@ -604,7 +606,7 @@ void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
 	magColour(color);	
 }
 
-void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col)
+extern "C" void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col)
 {
 	if (col!=0)
 	{
@@ -617,7 +619,7 @@ void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col)
 	}
 }
 
-void GLColor4fv(struct GLVampContext *vampContext, float *v)
+extern "C" void GLColor4fv(struct GLVampContext *vampContext, float *v)
 {
 	if (v!=0)
 	{
@@ -630,7 +632,7 @@ void GLColor4fv(struct GLVampContext *vampContext, float *v)
 	}
 }
 
-void GLColor3fv(struct GLVampContext *vampContext, float *v)
+extern "C" void GLColor3fv(struct GLVampContext *vampContext, float *v)
 {
 	if (v!=0)
 	{

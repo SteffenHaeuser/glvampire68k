@@ -15,8 +15,11 @@
 #include <maggie_flags.h>
 #include <maggie_vertex.h>
 
-struct GLVampContext vamp_Context;
-void GLGenerateError(GLVampContext *vampContext, int type, const char* message);
+struct Library *MaggieBase = 0;
+struct Library *CyberGfxBase = 0;
+
+struct GLVampContext vampContext;
+extern "C" void GLGenerateError(GLVampContext *vampContext, int type, const char* message);
 
 static volatile int vblPassed;
 
@@ -33,7 +36,7 @@ void WaitVBLPassed()
 	vblPassed = 0;
 }
 
-void GLUBeginFrame(struct GLVampContext *vampContext)
+extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 {
 	volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
 	
@@ -80,7 +83,7 @@ void GLUBeginFrame(struct GLVampContext *vampContext)
 	}
 }
 
-void GLUEndFrame(struct GLVampContext *vampContext)
+extern "C" void GLUEndFrame(struct GLVampContext *vampContext)
 {
 	int borderWidth, borderHeight;
 	
@@ -104,9 +107,7 @@ void GLUEndFrame(struct GLVampContext *vampContext)
 	}
 }
 
-
-//int GLUOpenDisplay(struct GLVampContext *vampContext, int BPP, int maggieMode, int width, int height)
-int GLUOpenDisplay(struct GLVampContext *vampContext, struct TagItem *tags)
+extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags)
 {
 	std::vector<MaggieVertex> *vertices;
 	std::map<int,int> *vampTextureMap;
@@ -186,13 +187,23 @@ int GLUOpenDisplay(struct GLVampContext *vampContext, struct TagItem *tags)
 		return 0;
 	}
 	
-	vampContext->MaggieBase = OpenLibrary("maggie.library", 0);
+	MaggieBase = OpenLibrary("maggie.library", 0);
 
-	if(!vampContext->MaggieBase)
+	if(!MaggieBase)
 	{
 		vampContext->glError = GL_INVALID_OPERATION;
 		GenerateGLError(GL_INVALID_OPERATION,"Could not open maggie.library\n");
 		return 0;
+	}
+	
+	CyberGfxBase = OpenLibrary("cybergraphics.library", 0);
+	if (!CyberGfxBase)
+	{
+		if (MaggieBase) CloseLibrary(MaggieBase);
+		MaggieBase = 0;
+		vampContext->glError = GL_INVALID_OPERATION;
+		GenerateGLError(GL_INVALID_OPERATION,"Could not open cybergraphics.library\n");
+		return 0;		
 	}
 	
 	vampContext->vampBpp = BPP;
@@ -307,7 +318,7 @@ int GLUOpenDisplay(struct GLVampContext *vampContext, struct TagItem *tags)
 	return 1;
 }
 
-void GLUCloseDisplay(struct GLVampContext *vampContext)
+extern  "C" void GLUCloseDisplay(struct GLVampContext *vampContext)
 {
 	volatile UWORD *SAGA_ScreenMode = (UWORD *)0xdff1f4;
 	volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
@@ -352,7 +363,9 @@ void GLUCloseDisplay(struct GLVampContext *vampContext)
 		delete (std::stack<mat4*>*)vampContext->matrixStack;
 		vampContext->matrixStack = 0;
 	}
-	if (vampContext->MaggieBase) CloseLibrary(vampContext->MaggieBase);
-	vampContext->MaggieBase = 0;
+	if (MaggieBase) CloseLibrary(MaggieBase);
+	MaggieBase = 0;
+	if (CyberGfxBase) CloseLibrary(CyberGfxBase);
+	CyberGfxBase = 0;
 	delete (std::stack<mat4*>*)vampContext->matrixStack;
 }
