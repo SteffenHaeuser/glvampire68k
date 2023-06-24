@@ -96,7 +96,7 @@ void glFogi(int i, int j);
 void glFogfv(int i, float *col);
 void glReadPixels(int x, int y, int w, int h, int i, int j, void *k);
 void glFogf(int i, float j);
-char *glGetString(int i);
+char *glGetString(int i); // DONE
 
 
 #define GL_NO_ERROR 0
