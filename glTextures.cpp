@@ -38,12 +38,46 @@ extern "C" void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 extern "C" void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels)
 {
 	int texHandle = -1;
-	//int pixsize = 0;
+	int format=-1;
+	
+	if (p!=GL_UNSIGNED_BYTE)
+	{
+		char error[1024];
+		
+		sprintf(error,"glTexImage2D currently only supports Textures in GL_UNSIGNED_BYTE\n");
+		vampContext->glError = GL_INVALID_OPERATION;
+		GenerateGLError(vampContext->glError,error);
+		
+		return;			
+	}
+	
 	switch(o)
 	{
 		case GL_RGBA:
-			//if (p==GL_UNSIGNED_BYTE) pixsize = 4;
+			format = MAG_TEXFMT_RGBA;
 			break;
+		case GL_RGB:
+			format = MAG_TEXFMT_RGB;
+			break;
+		case GL_DXT1:
+			format = MAG_TEXFMT_DXT1;
+			break;
+		case GL_INTENSITY8:
+			break;
+		case GL_LUMINANCE8:
+			break;
+		default:
+			break;
+	}
+	if (format==-1)
+	{
+		char error[1024];
+		
+		sprintf(error,"Invalid Texture Format for glTexImage2D: %d\n",o);
+		vampContext->glError = GL_INVALID_OPERATION;
+		GenerateGLError(vampContext->glError,error);
+		
+		return;		
 	}
 	if (i==GL_TEXTURE_2D)
 	{
@@ -64,7 +98,7 @@ extern "C" void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, in
 		}
 		vampTextureMap->insert(std::make_pair(vampContext->maxVampTex, texHandle));
 		vampContext->maxVampTex++;
-		magUploadTexture(texHandle, j, pixels, 0);
+		magUploadTexture(texHandle, j, pixels, format);
 	}
 }
 
@@ -99,5 +133,35 @@ extern "C" void GLDeleteTextures(struct GLVampContext *vampContext, int num, voi
 	{
 		vampContext->glError = GL_INVALID_OPERATION;
 		GenerateGLError(vampContext->glError,"glDeleteTextures currently only supports if first parameter is 1\n");
+	}
+}
+
+extern "C" void GLTexGeni(struct GLVampContext *vampContext, __attribute__((unused)) int i, int j, int k)
+{
+	if (j!=GL_TEXTURE_GEN_MODE)
+	{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"glTexGeni currently only supports GL_TEXTURE_GEN_MODE, %d is not supported\n",j);
+				GenerateGLError(vampContext->glError,error);		
+				
+				return;
+	}
+	if (k==GL_SPHERE_MAP)
+	{
+		vampContext->vampDrawModes|= MAG_DRAWMODE_TEXGEN_REFLECT;
+	}
+	else if (k==GL_NORMAL_MAP)
+	{
+		vampContext->vampDrawModes &= ~MAG_DRAWMODE_TEXGEN_REFLECT;
+	}	
+	else
+	{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"Invalid TexGen mode %d\n",k);
+				GenerateGLError(vampContext->glError,error);		
 	}
 }

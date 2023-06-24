@@ -47,6 +47,7 @@ void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l);
 void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col);
 void GLColor4fv(struct GLVampContext *vampContext, float *v);
 void GLColor3fv(struct GLVampContext *vampContext, float *v);
+void GLTexGeni(struct GLVampContext *vampContext, int i, int j, int k);
 #ifdef __cplusplus
 }
 #endif
@@ -99,6 +100,7 @@ void GLColor3fv(struct GLVampContext *vampContext, float *v);
 #define glColor4ubv(col) GLColor4ubv(&vampContext,col);
 #define glColor4fv(v) GLColor4fv(&vampContext,v);
 #define glColor3fv(v) GLColor3fv(&vampContext,v);
+#define glTexGeni(i,j,k) GLTexGeni(&vampContext,i,j,k);
 #define GenerateGLError(type,msg) GLGenerateError(vampContext,type,msg);
 #define glDebugMessageCallback(callback,userparam) GLDebugMessageCallback(&vampContext,callback,userparam);
 

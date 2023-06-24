@@ -83,6 +83,7 @@ c) What is missing ?
 - glGetFloatv currently only supports getting the world matrix
 - Drawing functions might need optimizations
 - parameter types of GL Calls need to be made more compatible to OpenGL Standard (GLenum instead of int etc.).
+- glTexGeni currently always influences all Texture channels, and only GL_TEXTURE_GEN_MODE is supported, also only GL_SPHERE_MAP and GL_NORMAL_MAP
 - Possiblly I forgot some other current limitations
 
 2. How to link

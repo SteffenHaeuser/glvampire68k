@@ -74,7 +74,7 @@ void glEnd(); // DONE
 
 // glTexGen (might not be needed, not sure)
 
-void glTexGeni(int i, int j, int k);
+void glTexGeni(int i, int j, int k); // DONE
 
 // Z Buffer (only used to avoid models stuck in walls)
 
@@ -181,6 +181,8 @@ char *glGetString(int i);
 #define GL_DEBUG_SEVERITY_HIGH 81
 #define GL_DEBUG_SEVERITY_LOW 82
 #define GL_SOLID_FORMAT 83
+#define GL_DXT1 85 // Not part of OpenGL, just a little thing as Maggie supports this
+#define GL_NORMAL_MAP 86
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
