@@ -227,6 +227,7 @@ struct GLVampContext
 	void *interrupt;
 	struct Window *window;
 	int useWindow;
+	int manualDraw;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

@@ -36,7 +36,9 @@ extern "C" void GLBegin(struct GLVampContext *vampContext, int mode)
 			GenerateGLError(GL_INVALID_ENUM, error);
             break;
     }
-	magBegin();
+	if ((mode==GL_QUADS)||(mode==GL_POLYGON)||(mode==GL_LINE_STRIP)||(mode==GL_LINES)) vampContext->manualDraw = 1;
+	else vampContext->manualDraw = 0;
+	if (!vampContext->manualDraw) magBegin();
 }
 
 extern "C" void GLEnd(struct GLVampContext *vampContext) 
@@ -75,6 +77,7 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
             }
             break;
         case GL_TRIANGLE_FAN:
+#if 0 // Not needed		
             if (vertices->size() < 3) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for GL_TRIANGLE_FAN\n");
@@ -88,6 +91,7 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
                 }
                 magDrawIndexedTrianglesUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
             }
+#endif			
             break;
         case GL_LINE_STRIP:
             if (vertices->size() < 2) {
@@ -140,6 +144,7 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
 #endif			
             break;
         case GL_TRIANGLE_STRIP:
+#if 0 // Not needed		
             if (vertices->size() < 3) {
 				vampContext->glError = GL_INVALID_VALUE;
 				GenerateGLError(vampContext->glError,"Not enough vertices for GL_TRIANGLE_STRIP\n");
@@ -154,9 +159,10 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
                 end.v = (*vertices)[vertices->size() - 1].pos.y;
                 magDrawLinearSpan(&start, &end);
             }
+#endif			
             break;
         default:
             break;
     }
-	magEnd();
+	if (!vampContext->manualDraw) magEnd();
 }

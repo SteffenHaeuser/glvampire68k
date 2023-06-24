@@ -14,64 +14,78 @@
 extern struct Library *MaggieBase;
 
 extern "C" void GLVertex3f(struct GLVampContext *vampContext, float x, float y, float z)
-{
-    MaggieVertex vertex;
-	std::vector<MaggieVertex> *vertices;
+{	
+	if (vampContext->manualDraw)
+	{
+		MaggieVertex vertex;		
+		std::vector<MaggieVertex> *vertices;
 	
-	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+		vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
 	
-    vertex.pos = {x, y, z};
-    vertices->push_back(vertex);	
-	magVertex(x,y,z);
+		vertex.pos = {x, y, z};
+		vertices->push_back(vertex);	
+	}
+	else magVertex(x,y,z);
 }
 
 extern "C" void GLVertex2f(struct GLVampContext *vampContext, float x, float y)
 {
-    MaggieVertex vertex;
-	std::vector<MaggieVertex> *vertices;
+	if (vampContext->manualDraw)
+	{
+		MaggieVertex vertex;
+		std::vector<MaggieVertex> *vertices;
 	
-	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+		vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
 	
-    vertex.pos = {x, y, 0.0f};
-    vertices->push_back(vertex);	
-	magVertex(x,y,0.0f);
+		vertex.pos = {x, y, 0.0f};
+		vertices->push_back(vertex);	
+	}
+	else magVertex(x,y,0.0f);
 }
 
 extern "C" void GLNormal3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
-	std::vector<MaggieVertex> *vertices;
-	
-	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
-	
-    if (!vertices->empty()) {
-        MaggieVertex& currentVertex = vertices->back();
-        currentVertex.normal = {x, y, z};
-    }	
-	else
+	if (vampContext->manualDraw)
 	{
-		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError,"glNormal3f was called before glVertex was called\n");
+		std::vector<MaggieVertex> *vertices;
+	
+		vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+		if (!vertices->empty()) {
+			MaggieVertex& currentVertex = vertices->back();
+			currentVertex.normal = {x, y, z};
+		}	
+		else
+		{
+			vampContext->glError = GL_INVALID_OPERATION;
+			GenerateGLError(vampContext->glError,"glNormal3f was called before glVertex was called\n");
+		}
 	}
-	magNormal(x,y,z);
+	else magNormal(x,y,z);
 }
 
 extern "C" void GLVertex3fv(struct GLVampContext *vampContext, float *vec)
 {
-	std::vector<MaggieVertex> *vertices;
-	
-	vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
-	
-	if (vec!=0)
-	{
-		MaggieVertex vertex;
-		vertex.pos = {vec[0],vec[1],vec[2]};
-		vertices->push_back(vertex);		
-		magVertex(vec[0],vec[1],vec[2]);
-	}
-	else
+	if (vec==0)
 	{
 		vampContext->glError = GL_INVALID_VALUE;
 		GenerateGLError(vampContext->glError,"Vector for glVertex3fv was empty\n");
+		
+		return;
+	}	
+	if (vampContext->manualDraw)
+	{
+		std::vector<MaggieVertex> *vertices;
+		MaggieVertex vertex;
+				
+		vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+		vertex.pos = {vec[0],vec[1],vec[2]};
+		vertices->push_back(vertex);	
+	}
+	else
+	{
+		magVertex(vec[0],vec[1],vec[2]);
 	}
 }
 
@@ -79,11 +93,62 @@ extern "C" void GLTexCoord2f(struct GLVampContext *vampContext, float x, float y
 {
 	if (vampContext->currentTexture!=-1)
 	{
-		magTexCoord(vampContext->currentTexture,x,y);
+		if (vampContext->manualDraw==0) magTexCoord(vampContext->currentTexture,x,y);
+		else
+		{
+			std::vector<MaggieVertex> *vertices;
+	
+			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+			if (!vertices->empty()) 
+			{
+				MaggieVertex& currentVertex = vertices->back();
+				currentVertex.tex[0].u = x;
+				currentVertex.tex[0].v = y;
+				currentVertex.tex[0].w = 0;
+			}	
+			else
+			{
+				vampContext->glError = GL_INVALID_OPERATION;
+				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
+			}		
+		}
 	}
 	else 
 	{
 		vampContext->glError = GL_INVALID_OPERATION;
 		GenerateGLError(vampContext->glError,"No Texture was bound on call of glTexCoord2f\n");		
+	}
+}
+
+extern "C" void GLTexCoord3f(struct GLVampContext *vampContext, float x, float y, float z)
+{
+	if (vampContext->currentTexture!=-1)
+	{
+		if (vampContext->manualDraw==0) magTexCoord3(vampContext->currentTexture,x,y,z);
+		else
+		{
+			std::vector<MaggieVertex> *vertices;
+	
+			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+			if (!vertices->empty()) 
+			{
+				MaggieVertex& currentVertex = vertices->back();
+				currentVertex.tex[0].u = x;
+				currentVertex.tex[0].v = y;
+				currentVertex.tex[0].w = z;
+			}	
+			else
+			{
+				vampContext->glError = GL_INVALID_OPERATION;
+				GenerateGLError(vampContext->glError,"glTexCoord3f was called before glVertex was called\n");
+			}		
+		}
+	}
+	else 
+	{
+		vampContext->glError = GL_INVALID_OPERATION;
+		GenerateGLError(vampContext->glError,"No Texture was bound on call of glTexCoord3f\n");		
 	}
 }

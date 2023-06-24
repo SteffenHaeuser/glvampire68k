@@ -15,31 +15,65 @@ extern struct Library *MaggieBase;
 
 extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
 
-extern "C" void GLColor4f(__attribute__((unused)) struct GLVampContext *vampContext, float r, float g, float b, float a)
+extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
 {
-	unsigned char rdec = (unsigned char)r;
-	unsigned char gdec = (unsigned char)g;
-	unsigned char bdec = (unsigned char)b;
-	unsigned char adec = (unsigned char)a;
+	unsigned char rdec = (unsigned char)(r*255.0f);
+	unsigned char gdec = (unsigned char)(g*255.0f);
+	unsigned char bdec = (unsigned char)(b*255.0f);
+	unsigned char adec = (unsigned char)(a*255.0f);
 	
 	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
 	
-	magColour(color);
+	if (vampContext->manualDraw)
+	{
+			std::vector<MaggieVertex> *vertices;
+	
+			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+			if (!vertices->empty()) 
+			{
+				MaggieVertex& currentVertex = vertices->back();
+				currentVertex.colour = color;
+			}	
+			else
+			{
+				vampContext->glError = GL_INVALID_OPERATION;
+				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
+			}			
+	}
+	else magColour(color);
 }
 
-extern "C" void GLColor3f(__attribute__((unused)) struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
 {
-	unsigned char rdec = (unsigned char)x;
-	unsigned char gdec = (unsigned char)y;
-	unsigned char bdec = (unsigned char)z;
+	unsigned char rdec = (unsigned char)(x*255.0f);
+	unsigned char gdec = (unsigned char)(y*255.0f);
+	unsigned char bdec = (unsigned char)(z*255.0f);
 	unsigned char adec = 1;
 	
 	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
 	
-	magColour(color);	
+	if (vampContext->manualDraw)
+	{
+			std::vector<MaggieVertex> *vertices;
+	
+			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+			if (!vertices->empty()) 
+			{
+				MaggieVertex& currentVertex = vertices->back();
+				currentVertex.colour = color;
+			}	
+			else
+			{
+				vampContext->glError = GL_INVALID_OPERATION;
+				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
+			}			
+	}
+	else magColour(color);	
 }
 
-extern "C" void GLColor4ub(__attribute__((unused)) struct GLVampContext *vampContext, int i, int j, int k, int l)
+extern "C" void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
 {
 	unsigned char rdec = (unsigned char)i;
 	unsigned char gdec = (unsigned char)j;
@@ -48,7 +82,24 @@ extern "C" void GLColor4ub(__attribute__((unused)) struct GLVampContext *vampCon
 
 	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
 	
-	magColour(color);	
+	if (vampContext->manualDraw)
+	{
+			std::vector<MaggieVertex> *vertices;
+	
+			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
+	
+			if (!vertices->empty()) 
+			{
+				MaggieVertex& currentVertex = vertices->back();
+				currentVertex.colour = color;
+			}	
+			else
+			{
+				vampContext->glError = GL_INVALID_OPERATION;
+				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
+			}			
+	}
+	else magColour(color);	
 }
 
 extern "C" void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col)
