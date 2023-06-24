@@ -13,8 +13,6 @@
 
 extern struct Library *MaggieBase;
 
-extern void magClearColor(unsigned int l);  // To make it compile, will be removed once added to the maggie.library
-
 extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
 {
 	unsigned char rdec = (unsigned char)(r*255.0f);
@@ -150,7 +148,7 @@ extern "C" void GLClearColor(__attribute__((unused)) struct GLVampContext *vampC
 	unsigned char g = (unsigned char)(255*j);
 	unsigned char b = (unsigned char)(255*k);
 	rgb = (a<<24)|(r<<16)|(g<<8)|(b);
-	magClearColor(rgb);
+	magClearColour(rgb);
 }
 
 extern "C" void GLClear(struct GLVampContext *vampContext, unsigned int i)
