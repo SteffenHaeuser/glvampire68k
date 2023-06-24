@@ -74,7 +74,7 @@ void glEnd(); // DONE
 
 // glTexGen (might not be needed, not sure)
 
-void glTexGeni(int i, int j, int k); // DONE
+void glTexGeni(int i, int j, int k); // DONE (Partially)
 
 // Z Buffer (only used to avoid models stuck in walls)
 
@@ -88,7 +88,7 @@ void glTexEnvf(int i, int j, int k);
 
 // TexParameter
 
-void glTexParameteri(int i, int j, int k);
+void glTexParameteri(int i, int j, int k); // DONE (Partially)
 
 // Optional (as in REALLY REALLY optional, can be removed)
 

@@ -165,3 +165,75 @@ extern "C" void GLTexGeni(struct GLVampContext *vampContext, __attribute__((unus
 				GenerateGLError(vampContext->glError,error);		
 	}
 }
+
+extern "C" void GLTexParameteri(struct GLVampContext *vampContext, int i, int j, int k)
+{
+	if (i!=GL_TEXTURE_2D)
+	{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"glTexParameteri currently only supports GL_TEXTURE_2D, %d is not supported\n",i);
+				GenerateGLError(vampContext->glError,error);		
+				
+				return;
+	}	
+	if (j == GL_TEXTURE_MIN_FILTER)
+	{
+		if (k == GL_LINEAR)
+		{
+			vampContext->vampDrawModes|= MAG_DRAWMODE_BILINEAR;		
+		}
+		else if (k == GL_NEAREST)
+		{
+			vampContext->vampDrawModes &= ~MAG_DRAWMODE_BILINEAR;
+		}
+		else
+		{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n",k);
+				GenerateGLError(vampContext->glError,error);		
+				
+				return;			
+		}
+	}
+	else if (j == GL_TEXTURE_MAG_FILTER)
+	{
+		if (k == GL_LINEAR)
+		{
+			vampContext->vampDrawModes|= MAG_DRAWMODE_BILINEAR;		
+		}
+		else if (k == GL_NEAREST)
+		{
+			vampContext->vampDrawModes &= ~MAG_DRAWMODE_BILINEAR;
+		}	
+		else
+		{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n",k);
+				GenerateGLError(vampContext->glError,error);		
+				
+				return;			
+		}		
+	}
+	else if (j == GL_TEXTURE_WRAP_S)
+	{
+	}
+	else if (j == GL_TEXTURE_WRAP_T)
+	{
+	}
+	else
+	{
+				char error[1024];
+				
+				vampContext->glError = GL_INVALID_OPERATION;
+				sprintf(error,"glTexParameteri currently does not support %d\n",j);
+				GenerateGLError(vampContext->glError,error);		
+				
+				return;		
+	}
+}
