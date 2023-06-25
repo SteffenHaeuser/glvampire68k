@@ -94,7 +94,7 @@ void glTexParameteri(int i, int j, int k); // DONE (Partially)
 
 void glFogi(int i, int j);
 void glFogfv(int i, float *col);
-void glReadPixels(int x, int y, int w, int h, int i, int j, void *k);
+void glReadPixels(int x, int y, int w, int h, int i, int j, void *k); // DONE
 void glFogf(int i, float j);
 char *glGetString(int i); // DONE
 
@@ -183,6 +183,10 @@ char *glGetString(int i); // DONE
 #define GL_SOLID_FORMAT 83
 #define GL_DXT1 85 // Not part of OpenGL, just a little thing as Maggie supports this
 #define GL_NORMAL_MAP 86
+#define GL_UNSIGNED_SHORT 87
+#define GL_FLOAT 88
+#define GL_BGRA 89
+#define GL_BGR 90
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500

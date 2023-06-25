@@ -123,3 +123,20 @@ extern "C" void GLOrtho(struct GLVampContext *vampContext, float left, float rig
     vampContext->currentMatrix->m[3][1] = ty;
     vampContext->currentMatrix->m[3][2] = tz;
 }
+
+extern "C" const char* GLGetString(__attribute__((unused)) struct GLVampContext *vampContext, unsigned int name)
+{
+    switch (name)
+    {
+        case GL_VENDOR:
+            return "Steffen Häuser, tirionareonwe@gmail.com";
+        case GL_RENDERER:
+            return "Apollo Maggie Chip";
+        case GL_VERSION:
+            return "0.0.1";
+        case GL_EXTENSIONS:
+            return "";
+        default:
+            return 0;
+    }
+}

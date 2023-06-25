@@ -4,6 +4,7 @@
 #include <map>
 #include <stack>
 #include <vector>
+#include <stdlib.h>
 
 #include <proto/exec.h>
 #include <proto/Maggie.h>
@@ -165,4 +166,70 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
             break;
     }
 	if (!vampContext->manualDraw) magEnd();
+}
+
+void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, int height, unsigned int format, unsigned int type, void* pixels)
+{
+    unsigned char* screenPixels = (unsigned char *)vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];
+    int bpp = vampContext->vampBpp;
+    int screen_width = vampContext->vampWidth;
+
+    // Calculate the starting index in the screenPixels array based on the specified coordinates
+    int start_index = (y * screen_width + x) * bpp;
+
+    // Determine the order of color components based on the format parameter
+    int alpha_offset = (format == GL_BGRA) ? 3 : -1;
+
+    // Iterate over the specified region and copy the pixels to the provided memory location
+    for (int row = 0; row < height; row++)
+    {
+        // Calculate the offset in the screenPixels array for the current row
+        int row_offset = start_index + (row * screen_width * bpp);
+
+        // Calculate the offset in the destination pixels array for the current row
+        int dest_row_offset = row * width * bpp;
+
+        // Copy the pixels from screenPixels to the destination pixels array
+        for (int col = 0; col < width; col++)
+        {
+            // Calculate the offset in the screenPixels array for the current column
+            int col_offset = col * bpp;
+
+            // Calculate the offset in the destination pixels array for the current column
+            int dest_col_offset = col * bpp;
+
+            // Copy and convert the pixels from screenPixels to the destination pixels array
+            for (int i = 0; i < bpp; i++)
+            {
+                // Calculate the index in the screenPixels array for the current pixel
+                int pixel_index = row_offset + col_offset + i;
+
+                // Calculate the index in the destination pixels array for the current pixel
+                int dest_pixel_index = dest_row_offset + dest_col_offset + i;
+
+                // Determine the color component to copy based on the format parameter
+                unsigned char color_component = screenPixels[pixel_index];
+
+                // Handle the alpha component when present
+                if (alpha_offset != -1 && i == alpha_offset)
+                {
+                    // Copy the alpha component from screenPixels
+                    color_component = screenPixels[pixel_index];
+                }
+                else if (alpha_offset == -1 && i == bpp - 1)
+                {
+                    // Set alpha to maximum value (opaque) when there is no alpha component
+                    color_component = 255;
+                }
+
+                // Convert and store the color component in the destination pixels array based on the specified type
+                if (type == GL_UNSIGNED_BYTE)
+                    ((unsigned char*)pixels)[dest_pixel_index] = color_component;
+                else if (type == GL_UNSIGNED_SHORT)
+                    ((unsigned short*)pixels)[dest_pixel_index] = color_component << 8;
+                else if (type == GL_FLOAT)
+                    ((float*)pixels)[dest_pixel_index] = (float)color_component / 255.0f;
+            }
+        }
+    }
 }
