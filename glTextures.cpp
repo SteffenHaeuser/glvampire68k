@@ -237,3 +237,79 @@ extern "C" void GLTexParameteri(struct GLVampContext *vampContext, int i, int j,
 				return;		
 	}
 }
+
+extern "C" void GLTexEnvi(GLVampContext* vampContext, int target, int pname, int param)
+{
+    if (target != GL_TEXTURE_ENV) {
+        GenerateGLError(GL_INVALID_ENUM, "Invalid target for glTexEnvi");
+        return;
+    }
+
+    switch (pname) {
+        case GL_TEXTURE_ENV_MODE:
+            switch (param) {
+                case GL_REPLACE:
+					vampContext->texenv = 0;
+					break;
+				case GL_MODULATE:
+					vampContext->texenv = 1;
+					break;
+				case GL_DECAL:
+					vampContext->texenv = 2;
+					break;
+                case GL_BLEND:
+					vampContext->texenv = 3;
+					break;
+                case GL_ADD:
+                    vampContext->texenv = 4;
+                    break;
+                default:
+					vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid parameter value for glTexEnvi");
+                    return;
+            }
+            break;
+        default:
+			vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid parameter name for glTexEnvi");
+            return;
+    }
+}
+
+extern "C" void GLTexEnvf(GLVampContext* vampContext, int target, int pname, float param)
+{
+    if (target != GL_TEXTURE_ENV) {
+        GenerateGLError(GL_INVALID_ENUM, "Invalid target for glTexEnvi");
+        return;
+    }
+
+    switch (pname) {
+        case GL_TEXTURE_ENV_MODE:
+            switch ((int)param) {
+                case GL_REPLACE:
+					vampContext->texenv = 0;
+					break;
+				case GL_MODULATE:
+					vampContext->texenv = 1;
+					break;
+				case GL_DECAL:
+					vampContext->texenv = 2;
+					break;
+                case GL_BLEND:
+					vampContext->texenv = 3;
+					break;
+                case GL_ADD:
+                    vampContext->texenv = 4;
+                    break;
+                default:
+					vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid parameter value for glTexEnvi");
+                    return;
+            }
+            break;
+        default:
+			vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid parameter name for glTexEnvi");
+            return;
+    }
+}

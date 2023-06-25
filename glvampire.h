@@ -188,6 +188,7 @@ char *glGetString(int i); // DONE
 #define GL_BGRA 89
 #define GL_BGR 90
 #define GL_FOG_COORD_SRC 91
+#define GL_ADD 92
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
@@ -258,6 +259,7 @@ struct GLVampContext
 	struct FogParams fogParams;
 	int useFogging;
 	int useFogCoordSrc;
+	int texenv;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 
