@@ -187,6 +187,7 @@ char *glGetString(int i); // DONE
 #define GL_FLOAT 88
 #define GL_BGRA 89
 #define GL_BGR 90
+#define GL_FOG_COORD_SRC 91
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
@@ -204,6 +205,26 @@ char *glGetString(int i); // DONE
 #define GLdouble double
 
 typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
+
+enum FogMode {
+    FOG_LINEAR,
+    FOG_EXP,
+    FOG_EXP2
+};
+
+enum FogCoordSrc {
+	GL_FOG_COORD,
+	GL_FRAGMENT_DEPTH
+};
+
+struct FogParams {
+    FogMode mode;
+	FogCoordSrc fogCoordSrc;
+    float density;
+    float start;
+    float end;
+    unsigned int color;
+};
 
 struct GLVampContext
 {
@@ -234,6 +255,9 @@ struct GLVampContext
 	struct Window *window;
 	int useWindow;
 	int manualDraw;
+	FogParams fogParams;
+	int useFogging;
+	int useFogCoordSrc;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

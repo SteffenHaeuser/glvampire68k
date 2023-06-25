@@ -7,7 +7,7 @@ LIBS_GL4VAMPIRE = -lgl4vampire
 LIBS_GL = -lGL
 
 OBJS_GL4VAMPIRE = glvampirelib.o
-OBJS_GL = glErrors.o glSetup.o glColors.o glMatrix.o glDraw.o glVertex.o glZBuffer.o glTextures.o
+OBJS_GL = glErrors.o glSetup.o glColors.o glMatrix.o glDraw.o glVertex.o glZBuffer.o glTextures.o glStates.o
 OBJS_EXE = immediate2.o
 
 EXE = immediate2
