@@ -48,6 +48,57 @@ ULONG PackColor(ULONG r, ULONG g, ULONG b, ULONG a)
     return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
+extern "C" void GLFogfv(GLVampContext* vampContext, int i, float* col)
+{
+    switch (i) {
+        case GL_FOG_COLOR:
+            vampContext->fogParams.color = static_cast<unsigned int>(*col);
+            break;
+        case GL_FOG_DENSITY:
+            vampContext->fogParams.density = *col;
+            break;
+        case GL_FOG_START:
+            vampContext->fogParams.start = *col;
+            break;
+        case GL_FOG_END:
+            vampContext->fogParams.end = *col;
+            break;
+        case GL_FOG_MODE:
+            switch (static_cast<int>(*col)) {
+                case FOG_LINEAR:
+                    vampContext->fogParams.mode = FOG_LINEAR;
+                    break;
+                case FOG_EXP:
+                    vampContext->fogParams.mode = FOG_EXP;
+                    break;
+                case FOG_EXP2:
+                    vampContext->fogParams.mode = FOG_EXP2;
+                    break;
+                default:
+                    vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog mode");				
+                    break;
+            }
+            break;
+        case GL_FOG_COORD_SRC:
+            switch (static_cast<int>(*col)) {
+                case GL_FOG_COORD:
+                    vampContext->fogParams.fogCoordSrc = GL_FOG_COORD;
+                    break;
+                case GL_FRAGMENT_DEPTH:
+                    vampContext->fogParams.fogCoordSrc = GL_FRAGMENT_DEPTH;
+                    break;
+                default:
+                    vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog Coord Src Mode");				
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 extern "C" void GLFogi(GLVampContext* vampContext, int pname, int param)
 {
     switch (pname) {
@@ -107,6 +158,68 @@ extern "C" void GLFogi(GLVampContext* vampContext, int pname, int param)
                     vampContext->glError = GL_INVALID_ENUM;
                     GenerateGLError(GL_INVALID_ENUM, "Invalid fog coordinate source");
                     return;
+            }
+            break;
+        }
+
+        default:
+            GenerateGLError(GL_INVALID_ENUM, "Invalid fog parameter");
+            return;
+    }
+}
+
+extern "C" void GLFogf(GLVampContext* vampContext, int pname, float param)
+{
+    switch (pname) {
+        case GL_FOG_MODE: {
+            FogMode mode;
+
+            if (param == GL_LINEAR)
+                mode = FOG_LINEAR;
+            else if (param == GL_EXP)
+                mode = FOG_EXP;
+            else if (param == GL_EXP2)
+                mode = FOG_EXP2;
+            else {
+                vampContext->glError = GL_INVALID_ENUM;
+                GenerateGLError(GL_INVALID_ENUM, "Invalid fog mode");
+                return;
+            }
+
+            vampContext->fogParams.mode = mode;
+            break;
+        }
+
+        case GL_FOG_DENSITY:
+            vampContext->fogParams.density = param;
+            break;
+
+        case GL_FOG_START:
+            vampContext->fogParams.start = param;
+            break;
+
+        case GL_FOG_END:
+            vampContext->fogParams.end = param;
+            break;
+
+        case GL_FOG_COLOR:
+            vampContext->fogParams.color = PackColor(
+                static_cast<ULONG>((param * 255.0f) + 0.5f),
+                static_cast<ULONG>((param * 255.0f) + 0.5f),
+                static_cast<ULONG>((param * 255.0f) + 0.5f),
+                255
+            );
+            break;
+
+        case GL_FOG_COORD_SRC: {
+            if (param == GL_FOG_COORD)
+                vampContext->fogParams.fogCoordSrc = GL_FOG_COORD;
+            else if (param == GL_FRAGMENT_DEPTH)
+                vampContext->fogParams.fogCoordSrc = GL_FRAGMENT_DEPTH;
+            else {
+                vampContext->glError = GL_INVALID_ENUM;
+                GenerateGLError(GL_INVALID_ENUM, "Invalid fog coordinate source");
+                return;
             }
             break;
         }

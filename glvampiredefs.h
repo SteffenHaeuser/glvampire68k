@@ -49,6 +49,9 @@ void GLColor4fv(struct GLVampContext *vampContext, float *v);
 void GLColor3fv(struct GLVampContext *vampContext, float *v);
 void GLTexGeni(struct GLVampContext *vampContext, int i, int j, int k);
 void GLTexParameteri(struct GLVampContext *vampContext, int i, int j, int k);
+void GLFogi(struct GLVampContext* vampContext, int pname, int param);
+void GLFogf(struct GLVampContext* vampContext, int pname, float param);
+void GLFogfv(struct GLVampContext* vampContext, int i, float* col);
 void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, int height, unsigned int format, unsigned int type, void* pixels);
 const char* GLGetString(struct GLVampContext *vampContext, unsigned int name);
 #ifdef __cplusplus
@@ -107,6 +110,9 @@ const char* GLGetString(struct GLVampContext *vampContext, unsigned int name);
 #define glTexParameteri(i,j,k) GLTexParameteri(&vampContext,i,j,k);
 #define glGetString(name) GLGetString(&vampContext,name);
 #define glReadPixels(x,y,width,height,format,type,pixels) GLReadPixels(&vampContext,x,y,width,height,format,type,pixels);
+#define glFogi(pname,param) GLFogi(&vampContext,pname,param);
+#define glFogf(pname,param) GLFogf(&vampContext,pname,param);
+#define glFogfv(i,col) GLFogfv(&vampContext,i,col);
 #define GenerateGLError(type,msg) GLGenerateError(vampContext,type,msg);
 #define glDebugMessageCallback(callback,userparam) GLDebugMessageCallback(&vampContext,callback,userparam);
 

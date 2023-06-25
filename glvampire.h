@@ -92,7 +92,7 @@ void glTexParameteri(int i, int j, int k); // DONE (Partially)
 
 // Optional (as in REALLY REALLY optional, can be removed)
 
-void glFogi(int i, int j);
+void glFogi(int i, int j); // DONE
 void glFogfv(int i, float *col);
 void glReadPixels(int x, int y, int w, int h, int i, int j, void *k); // DONE
 void glFogf(int i, float j);
@@ -218,8 +218,8 @@ enum FogCoordSrc {
 };
 
 struct FogParams {
-    FogMode mode;
-	FogCoordSrc fogCoordSrc;
+    enum FogMode mode;
+	enum FogCoordSrc fogCoordSrc;
     float density;
     float start;
     float end;
@@ -255,7 +255,7 @@ struct GLVampContext
 	struct Window *window;
 	int useWindow;
 	int manualDraw;
-	FogParams fogParams;
+	struct FogParams fogParams;
 	int useFogging;
 	int useFogCoordSrc;
 	DebugMessageCallbackFunc glDebugMessage;
