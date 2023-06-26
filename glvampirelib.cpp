@@ -121,6 +121,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	int width = -1;
 	int height = -1;
 	char *name=0;
+	int reso = -1;
 	
 	if (!tags)
 	{
@@ -142,13 +143,95 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 				break;
 			case VAMPOD_MODE:
 				maggieMode = tags[i].ti_Data;
-				switch(maggieMode)
+				reso = maggieMode&0xFF00;
+				if (maggieMode&0x02) BPP = 2;
+				else if (maggieMode&0x05) BPP = 4;
+				else BPP = -1;
+				switch(reso)
 				{
-					case 0x0b02:
+					case 0x0100:
+						width = 320;
+						height = 200;
+						break;
+					case 0x0200:
+						width = 320;
+						height = 240;
+						break;
+					case 0x0300:
+						width = 320;
+						height = 256;
+						break;
+					case 0x0400:
+						width = 640;
+						height = 400;
+						break;
+					case 0x0500:
+						width = 640;
+						height = 480;
+						break;
+					case 0x0600:
+						width = 640;
+						height = 512;
+						break;
+					case 0x0700:
+						width = 960;
+						height = 512;
+						break;
+					case 0x0800:
+						width = 480;
+						height = 270;
+						break;
+					case 0x0900:
+						width = 304;
+						height = 224;
+						break;
+					case 0x0A00:
+						width = 1280;
+						height = 720;
+						break;
+					case 0x0B00:
 						width = 640;
 						height = 360;
 						break;
+					case 0x0C00:
+						width = 800;
+						height = 600;
+						break;
+					case 0x0D00:
+						width = 1024;
+						height = 768;
+						break;
+					case 0x0E00:
+						width = 720;
+						height = 576;
+						break;
+					case 0x0F00:
+						width = 848;
+						height = 480;
+						break;
+					case 0x1000:
+						width = 640;
+						height = 200;
+						break;
+					case 0x1100:
+						width = 1920;
+						height = 1080;
+						break;
+					case 0x1200:
+						width = 1280;
+						height = 1024;
+						break;
+					case 0x1300:
+						width = 1280;
+						height = 800;
+						break;
+					case 0x1400:
+						width = 1440;
+						height = 900;
+						break;
 					default:
+						width = -1;
+						height = -1;
 						break;
 				}
 				break;
@@ -176,9 +259,165 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 		i++;
 	}
 	
-	if ((width==640)&&(height==360)&&(maggieMode!=0x0b02))
+	if ((width==640)&&(height==360)&&(reso!=0x0B00)&&(BPP==2))
 	{
-		maggieMode = 0x0b02;
+		maggieMode = 0x0B02;
+	}	
+	else if ((width==640)&&(height==360)&&(reso!=0x0B00)&&(BPP==4))
+	{
+		maggieMode = 0x0B05;
+	}
+	else if ((width==320)&&(height==200)&&(reso!=0x0100)&&(BPP==2))
+	{
+		maggieMode = 0x0102;
+	}	
+	else if ((width==320)&&(height==200)&&(reso!=0x0100)&&(BPP==4))
+	{
+		maggieMode = 0x0105;
+	}
+	else if ((width==320)&&(height==240)&&(reso!=0x0200)&&(BPP==2))
+	{
+		maggieMode = 0x0202;
+	}	
+	else if ((width==320)&&(height==240)&&(reso!=0x0200)&&(BPP==4))
+	{
+		maggieMode = 0x0205;
+	}	
+	else if ((width==320)&&(height==256)&&(reso!=0x0300)&&(BPP==2))
+	{
+		maggieMode = 0x0302;
+	}	
+	else if ((width==320)&&(height==256)&&(reso!=0x0300)&&(BPP==4))
+	{
+		maggieMode = 0x0305;
+	}	
+	else if ((width==640)&&(height==400)&&(reso!=0x0400)&&(BPP==2))
+	{
+		maggieMode = 0x0402;
+	}	
+	else if ((width==640)&&(height==400)&&(reso!=0x0400)&&(BPP==4))
+	{
+		maggieMode = 0x0405;
+	}	
+	else if ((width==640)&&(height==480)&&(reso!=0x0500)&&(BPP==2))
+	{
+		maggieMode = 0x0502;
+	}	
+	else if ((width==640)&&(height==480)&&(reso!=0x0500)&&(BPP==4))
+	{
+		maggieMode = 0x0505;
+	}	
+	else if ((width==640)&&(height==512)&&(reso!=0x0600)&&(BPP==2))
+	{
+		maggieMode = 0x0602;
+	}	
+	else if ((width==640)&&(height==512)&&(reso!=0x0600)&&(BPP==4))
+	{
+		maggieMode = 0x0605;
+	}	
+	else if ((width==960)&&(height==540)&&(reso!=0x0700)&&(BPP==2))
+	{
+		maggieMode = 0x0702;
+	}	
+	else if ((width==960)&&(height==540)&&(reso!=0x0700)&&(BPP==4))
+	{
+		maggieMode = 0x0705;
+	}	
+	else if ((width==480)&&(height==270)&&(reso!=0x0800)&&(BPP==2))
+	{
+		maggieMode = 0x0802;
+	}	
+	else if ((width==480)&&(height==270)&&(reso!=0x0800)&&(BPP==4))
+	{
+		maggieMode = 0x0805;
+	}	
+	else if ((width==304)&&(height==224)&&(reso!=0x0900)&&(BPP==2))
+	{
+		maggieMode = 0x0902;
+	}	
+	else if ((width==304)&&(height==224)&&(reso!=0x0900)&&(BPP==4))
+	{
+		maggieMode = 0x0905;
+	}	
+	else if ((width==1280)&&(height==720)&&(reso!=0x0A00)&&(BPP==2))
+	{
+		maggieMode = 0x0A02;
+	}	
+	else if ((width==1280)&&(height==720)&&(reso!=0x0A00)&&(BPP==4))
+	{
+		maggieMode = 0x0105;
+	}	
+	else if ((width==800)&&(height==600)&&(reso!=0x0C00)&&(BPP==2))
+	{
+		maggieMode = 0x0C02;
+	}	
+	else if ((width==800)&&(height==600)&&(reso!=0x0C00)&&(BPP==4))
+	{
+		maggieMode = 0x0C05;
+	}	
+	else if ((width==1024)&&(height==768)&&(reso!=0x0D00)&&(BPP==2))
+	{
+		maggieMode = 0x0D02;
+	}	
+	else if ((width==1024)&&(height==768)&&(reso!=0x0D00)&&(BPP==4))
+	{
+		maggieMode = 0x0D05;
+	}	
+	else if ((width==720)&&(height==576)&&(reso!=0x0E00)&&(BPP==2))
+	{
+		maggieMode = 0x0E02;
+	}	
+	else if ((width==720)&&(height==576)&&(reso!=0x0E00)&&(BPP==4))
+	{
+		maggieMode = 0x0E05;
+	}	
+	else if ((width==848)&&(height==480)&&(reso!=0x0F00)&&(BPP==2))
+	{
+		maggieMode = 0x0F02;
+	}	
+	else if ((width==848)&&(height==480)&&(reso!=0x0F00)&&(BPP==4))
+	{
+		maggieMode = 0x0F05;
+	}	
+	else if ((width==640)&&(height==200)&&(reso!=0x1000)&&(BPP==2))
+	{
+		maggieMode = 0x1002;
+	}	
+	else if ((width==640)&&(height==200)&&(reso!=0x1000)&&(BPP==4))
+	{
+		maggieMode = 0x1005;
+	}	
+	else if ((width==1920)&&(height==1080)&&(reso!=0x1100)&&(BPP==2))
+	{
+		maggieMode = 0x1102;
+	}	
+	else if ((width==1920)&&(height==1080)&&(reso!=0x1100)&&(BPP==4))
+	{
+		maggieMode = 0x1105;
+	}	
+	else if ((width==1280)&&(height==1024)&&(reso!=0x1200)&&(BPP==2))
+	{
+		maggieMode = 0x1202;
+	}	
+	else if ((width==1280)&&(height==1024)&&(reso!=0x1200)&&(BPP==4))
+	{
+		maggieMode = 0x1205;
+	}	
+	else if ((width==1280)&&(height==800)&&(reso!=0x1300)&&(BPP==2))
+	{
+		maggieMode = 0x1302;
+	}	
+	else if ((width==1280)&&(height==800)&&(reso!=0x1300)&&(BPP==4))
+	{
+		maggieMode = 0x1305;
+	}	
+	else if ((width==1440)&&(height==900)&&(reso!=0x1400)&&(BPP==2))
+	{
+		maggieMode = 0x1402;
+	}	
+	else if ((width==1440)&&(height==900)&&(reso!=0x1400)&&(BPP==4))
+	{
+		maggieMode = 0x1405;
 	}	
 	
 	if ((BPP==-1)||(maggieMode==-1)||(width==-1)||(height==-1))
