@@ -280,6 +280,11 @@ struct GLVampContext
 	int blendFuncDest;
 	int useBlending;
 	int blendEquation;
+	int separateBlendFuncEnabled;
+	int blendFuncSrcRGB;
+	int blendFuncDestRGB;
+	int blendFuncSrcAlpha;
+	int blendFuncDestAlpha;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

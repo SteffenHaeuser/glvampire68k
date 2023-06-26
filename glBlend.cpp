@@ -79,6 +79,14 @@ extern "C" void GLBlendFunc(struct GLVampContext* vampContext, int i, int j)
 	vampContext->blendFuncDest = j;
 }
 
+extern "C" void GLBlendFuncSeparate(struct GLVampContext* vampContext, int srcRGB, int destRGB, int srcAlpha, int destAlpha)
+{
+    vampContext->blendFuncSrcRGB = srcRGB;
+    vampContext->blendFuncDestRGB = destRGB;
+    vampContext->blendFuncSrcAlpha = srcAlpha;
+    vampContext->blendFuncDestAlpha = destAlpha;
+}
+
 extern "C" void GLBlendEquation(struct GLVampContext* vampContext, int mode)
 {
 	vampContext->blendEquation = mode;
@@ -97,8 +105,247 @@ ULONG getConstantColor(struct GLVampContext *vampContext)
     return vampContext->blendColor;
 }
 
+void ApplyBlendFuncSeparate(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices)
+{
+    // Apply the blend function for RGB channels
+    switch (vampContext->blendFuncSrcRGB) {
+        case GL_ZERO:
+            // Blending logic for GL_ZERO source (RGB)
+            // No blending, set color to transparent black (0x00000000)
+            for (auto& vertex : vertices) {
+                vertex.colour = 0x00000000;
+            }
+            break;
+        case GL_ONE:
+            // Blending logic for GL_ONE source (RGB)
+            // No blending, preserve original color
+            break;
+        case GL_SRC_COLOR:
+            // Blending logic for GL_SRC_COLOR source (RGB)
+            // Multiply vertex color by source color
+            for (auto& vertex : vertices) {
+                ULONG srcColor = vertex.colour & 0x00FFFFFF; // Get the source color
+                vertex.colour = MultiplyColorByAlpha(srcColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_COLOR:
+            // Blending logic for GL_ONE_MINUS_SRC_COLOR source (RGB)
+            // Multiply vertex color by (1 - source color)
+            for (auto& vertex : vertices) {
+                ULONG srcColor = vertex.colour & 0x00FFFFFF; // Get the source color
+                ULONG invSrcColor = 0xFFFFFFFF - srcColor; // Compute (1 - source color)
+                vertex.colour = MultiplyColorByAlpha(invSrcColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_SRC_ALPHA:
+            // Blending logic for GL_SRC_ALPHA source (RGB)
+            // Multiply vertex color by source alpha
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                vertex.colour = MultiplyColorByAlpha(srcAlpha); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_ALPHA:
+            // Blending logic for GL_ONE_MINUS_SRC_ALPHA source (RGB)
+            // Multiply vertex color by (1 - source alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG invSrcAlpha = 0xFF - srcAlpha; // Compute (1 - source alpha)
+                vertex.colour = MultiplyColorByAlpha(invSrcAlpha); // Multiply by vertex alpha
+            }
+            break;
+        case GL_DST_COLOR:
+            // Blending logic for GL_DST_COLOR source (RGB)
+            // Multiply vertex color by destination color
+            for (auto& vertex : vertices) {
+                ULONG dstColor = vertex.colour & 0x00FFFFFF; // Get the destination color
+                vertex.colour = MultiplyColorByAlpha(dstColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_DST_COLOR:
+            // Blending logic for GL_ONE_MINUS_DST_COLOR source (RGB)
+            // Multiply vertex color by (1 - destination color)
+            for (auto& vertex : vertices) {
+                ULONG dstColor = vertex.colour & 0x00FFFFFF; // Get the destination color
+                ULONG invDstColor = 0xFFFFFFFF - dstColor; // Compute (1 - destination color)
+                vertex.colour = MultiplyColorByAlpha(invDstColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_SRC_ALPHA_SATURATE:
+            // Blending logic for GL_SRC_ALPHA_SATURATE source (RGB)
+            // Multiply vertex color by minimum of source alpha and (1 - destination alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG dstAlpha = (vertex.colour >> 24) & 0xFF; // Get the destination alpha
+                ULONG minAlpha = std::min(srcAlpha, 0xFF - dstAlpha); // Compute minimum of source alpha and (1 - destination alpha)
+                vertex.colour = MultiplyColorByAlpha(minAlpha); // Multiply by vertex alpha
+            }
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid blendFuncSrcRGB value");
+            break;
+    }
+
+    // Apply the blend function for RGB channels
+    switch (vampContext->blendFuncDestRGB) {
+        case GL_ZERO:
+            // Blending logic for GL_ZERO destination (RGB)
+            // No blending, preserve original color
+            break;
+        case GL_ONE:
+            // Blending logic for GL_ONE destination (RGB)
+            // No blending, set color to white (0xFFFFFFFF)
+            for (auto& vertex : vertices) {
+                vertex.colour = 0xFFFFFFFF;
+            }
+            break;
+        case GL_SRC_COLOR:
+            // Blending logic for GL_SRC_COLOR destination (RGB)
+            // Multiply vertex color by source color
+            for (auto& vertex : vertices) {
+                ULONG srcColor = vertex.colour & 0x00FFFFFF; // Get the source color
+                vertex.colour = MultiplyColorByAlpha(srcColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_COLOR:
+            // Blending logic for GL_ONE_MINUS_SRC_COLOR destination (RGB)
+            // Multiply vertex color by (1 - source color)
+            for (auto& vertex : vertices) {
+                ULONG srcColor = vertex.colour & 0x00FFFFFF; // Get the source color
+                ULONG invSrcColor = 0xFFFFFFFF - srcColor; // Compute (1 - source color)
+                vertex.colour = MultiplyColorByAlpha(invSrcColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_SRC_ALPHA:
+            // Blending logic for GL_SRC_ALPHA destination (RGB)
+            // Multiply vertex color by source alpha
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                vertex.colour = MultiplyColorByAlpha(srcAlpha); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_ALPHA:
+            // Blending logic for GL_ONE_MINUS_SRC_ALPHA destination (RGB)
+            // Multiply vertex color by (1 - source alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG invSrcAlpha = 0xFF - srcAlpha; // Compute (1 - source alpha)
+                vertex.colour = MultiplyColorByAlpha(invSrcAlpha); // Multiply by vertex alpha
+            }
+            break;
+        case GL_DST_COLOR:
+            // Blending logic for GL_DST_COLOR destination (RGB)
+            // Multiply vertex color by destination color
+            for (auto& vertex : vertices) {
+                ULONG dstColor = vertex.colour & 0x00FFFFFF; // Get the destination color
+                vertex.colour = MultiplyColorByAlpha(dstColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_DST_COLOR:
+            // Blending logic for GL_ONE_MINUS_DST_COLOR destination (RGB)
+            // Multiply vertex color by (1 - destination color)
+            for (auto& vertex : vertices) {
+                ULONG dstColor = vertex.colour & 0x00FFFFFF; // Get the destination color
+                ULONG invDstColor = 0xFFFFFFFF - dstColor; // Compute (1 - destination color)
+                vertex.colour = MultiplyColorByAlpha(invDstColor); // Multiply by vertex alpha
+            }
+            break;
+        case GL_SRC_ALPHA_SATURATE:
+            // Blending logic for GL_SRC_ALPHA_SATURATE destination (RGB)
+            // Multiply vertex color by minimum of source alpha and (1 - destination alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG dstAlpha = (vertex.colour >> 24) & 0xFF; // Get the destination alpha
+                ULONG minAlpha = std::min(srcAlpha, 0xFF - dstAlpha); // Compute minimum of source alpha and (1 - destination alpha)
+                vertex.colour = MultiplyColorByAlpha(minAlpha); // Multiply by vertex alpha
+            }
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid blendFuncDestRGB value");
+            break;
+    }
+
+    // Apply the blend function for alpha channel
+    switch (vampContext->blendFuncSrcAlpha) {
+        case GL_ZERO:
+            // Blending logic for GL_ZERO source (alpha)
+            // No blending, set alpha to 0
+            for (auto& vertex : vertices) {
+                vertex.colour &= 0x00FFFFFF; // Set alpha to 0
+            }
+            break;
+        case GL_ONE:
+            // Blending logic for GL_ONE source (alpha)
+            // No blending, preserve original alpha
+            break;
+        case GL_SRC_ALPHA:
+            // Blending logic for GL_SRC_ALPHA source (alpha)
+            // Multiply vertex alpha by source alpha
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                vertex.colour = (vertex.colour & 0x00FFFFFF) | (srcAlpha << 24); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_ALPHA:
+            // Blending logic for GL_ONE_MINUS_SRC_ALPHA source (alpha)
+            // Multiply vertex alpha by (1 - source alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG invSrcAlpha = 0xFF - srcAlpha; // Compute (1 - source alpha)
+                vertex.colour = (vertex.colour & 0x00FFFFFF) | (invSrcAlpha << 24); // Multiply by vertex alpha
+            }
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid blendFuncSrcAlpha value");
+            break;
+    }
+
+    // Apply the blend function for alpha channel
+    switch (vampContext->blendFuncDestAlpha) {
+        case GL_ZERO:
+            // Blending logic for GL_ZERO destination (alpha)
+            // No blending, preserve original alpha
+            break;
+        case GL_ONE:
+            // Blending logic for GL_ONE destination (alpha)
+            // No blending, set alpha to 1
+            for (auto& vertex : vertices) {
+                vertex.colour = (vertex.colour & 0x00FFFFFF) | 0xFF000000; // Set alpha to 1
+            }
+            break;
+        case GL_SRC_ALPHA:
+            // Blending logic for GL_SRC_ALPHA destination (alpha)
+            // Multiply vertex alpha by source alpha
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                vertex.colour = (vertex.colour & 0x00FFFFFF) | (srcAlpha << 24); // Multiply by vertex alpha
+            }
+            break;
+        case GL_ONE_MINUS_SRC_ALPHA:
+            // Blending logic for GL_ONE_MINUS_SRC_ALPHA destination (alpha)
+            // Multiply vertex alpha by (1 - source alpha)
+            for (auto& vertex : vertices) {
+                ULONG srcAlpha = vertex.colour >> 24; // Get the source alpha
+                ULONG invSrcAlpha = 0xFF - srcAlpha; // Compute (1 - source alpha)
+                vertex.colour = (vertex.colour & 0x00FFFFFF) | (invSrcAlpha << 24); // Multiply by vertex alpha
+            }
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid blendFuncDestAlpha value");
+            break;
+    }
+}
+
+
 void ApplyBlendFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices)
 {
+	if (vampContext->separateBlendFuncEnabled) ApplyBlendFuncSeparate(vampContext,vertices);
+	else
+	{
     // Apply the blend function
     switch (vampContext->blendFuncSrc) {
         case GL_ZERO:
@@ -228,6 +475,7 @@ void ApplyBlendFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>
             GenerateGLError(GL_INVALID_ENUM, "Invalid blendFuncSrc value");
             break;
     }
+	}
 }
 
 void ApplyBlendEquation(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices)

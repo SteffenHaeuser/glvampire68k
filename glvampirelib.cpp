@@ -219,6 +219,11 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	vampContext->blendColor = 0xFFFFFFFF;
 	vampContext->blendFuncSrc = GL_ONE;
 	vampContext->blendFuncDest = GL_ONE;
+	vampContext->blendFuncSrcRGB = GL_ONE;
+	vampContext->blendFuncDestRGB = GL_ONE;
+	vampContext->blendFuncSrcAlpha = GL_ONE;
+	vampContext->blendFuncDestAlpha = GL_ONE;
+	vampContext->separateBlendFuncEnabled = 0;
 	vampContext->useFogging = 0;
 	vampContext->useFogCoordSrc = 0;
 	vampContext->fogParams.mode = FOG_LINEAR;
