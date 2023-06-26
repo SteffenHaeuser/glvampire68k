@@ -189,6 +189,15 @@ char *glGetString(int i); // DONE
 #define GL_BGR 90
 #define GL_FOG_COORD_SRC 91
 #define GL_ADD 92
+#define GL_CONSTANT_ALPHA 93
+#define GL_ONE_MINUS_CONSTANT_ALPHA 94
+#define GL_CONSTANT_COLOR 95
+#define GL_ONE_MINUS_CONSTANT_COLOR 96
+#define GL_ONE_MINUS_DST_ALPHA 97
+#define GL_DST_ALPHA 98
+#define GL_ONE_MINUS_DST_COLOR 99
+#define GL_ONE_MINUS_SRC_COLOR 100
+#define GL_DST_COLOR 101
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
@@ -260,6 +269,10 @@ struct GLVampContext
 	int useFogging;
 	int useFogCoordSrc;
 	int texenv;
+	ULONG blendColor;
+	int blendFuncSrc;
+	int blendFuncDest;
+	int useBlending;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

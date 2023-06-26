@@ -53,6 +53,8 @@ void GLFogi(struct GLVampContext* vampContext, int pname, int param);
 void GLFogf(struct GLVampContext* vampContext, int pname, float param);
 void GLFogfv(struct GLVampContext* vampContext, int i, float* col);
 void GLTexEnvi(struct GLVampContext* vampContext, int i, int j, int k);
+void GLBlendFunc(struct GLVampContext* vampContext, int i, int j);
+void GLBlendColor(struct GLVampContext* vampContext, float r, float g, float b, float a);
 void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, int height, unsigned int format, unsigned int type, void* pixels);
 const char* GLGetString(struct GLVampContext *vampContext, unsigned int name);
 #ifdef __cplusplus
@@ -116,6 +118,8 @@ const char* GLGetString(struct GLVampContext *vampContext, unsigned int name);
 #define glFogfv(i,col) GLFogfv(&vampContext,i,col);
 #define glTexEnvi(i,j,k) GLTexEnvi(&vampContext,i,j,k);
 #define glTexEnvf(i,j,k) GLTexEnvf(&vampContext,i,j,k);
+#define glBlendFunc(i,j) GLBlendFunc(&vampContext,i,j);
+#define glBlendColor(r,g,b,a) GLBlendColor(&vampContext,r,g,b,a);
 #define GenerateGLError(type,msg) GLGenerateError(vampContext,type,msg);
 #define glDebugMessageCallback(callback,userparam) GLDebugMessageCallback(&vampContext,callback,userparam);
 

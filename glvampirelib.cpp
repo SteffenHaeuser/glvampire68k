@@ -215,6 +215,19 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	vampContext->currentMatrix = &vampContext->projectionMatrix;
 	vampContext->vampWidth = width;
 	vampContext->vampHeight = height;
+	vampContext->texenv = 0;
+	vampContext->blendColor = 0xFFFFFFFF;
+	vampContext->blendFuncSrc = GL_ONE;
+	vampContext->blendFuncDest = GL_ONE;
+	vampContext->useFogging = 0;
+	vampContext->useFogCoordSrc = 0;
+	vampContext->fogParams.mode = FOG_LINEAR;
+	vampContext->fogParams.fogCoordSrc = GL_FRAGMENT_DEPTH;
+	vampContext->fogParams.density = 1.0f;
+	vampContext->fogParams.start = 0.0f;
+	vampContext->fogParams.end = 1.0f;
+	vampContext->fogParams.color = 0xFFFFFFFF;
+	vampContext->useBlending = 0;
 	vampContext->maxVampTex = 1;
 	vampContext->matrixStack = (void*)(new std::stack<mat4*>());
 	if (vampContext->matrixStack==0)

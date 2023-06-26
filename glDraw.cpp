@@ -38,8 +38,9 @@ extern "C" void GLBegin(struct GLVampContext *vampContext, int mode)
 			GenerateGLError(GL_INVALID_ENUM, error);
             break;
     }
-	if ((mode==GL_QUADS)||(mode==GL_POLYGON)||(mode==GL_LINE_STRIP)||(mode==GL_LINES)) vampContext->manualDraw = 1;
-	else vampContext->manualDraw = 0;
+	//if ((mode==GL_QUADS)||(mode==GL_POLYGON)||(mode==GL_LINE_STRIP)||(mode==GL_LINES)) vampContext->manualDraw = 1;
+	//else vampContext->manualDraw = 0;
+	vampContext->manualDraw = 1;
 	if (!vampContext->manualDraw) magBegin();
 }
 
@@ -285,49 +286,46 @@ void ApplyFogging(GLVampContext* vampContext, std::vector<MaggieVertex>* vertice
 
 void ApplyTexEnv(struct GLVampContext *vampContext, std::vector<MaggieVertex>& vertices, int texenv)
 {
-    if (texenv == 0) {
-        // GL_REPLACE
-        // Iterate over each vertex and set its texture coordinates to (0, 0)
-        for (auto& vertex : vertices) {
-            vertex.tex[0].u = 0.0f;
-            vertex.tex[0].v = 0.0f;
-        }
-    } else if (texenv == 1) {
-        // GL_MODULATE
-        // Iterate over each vertex and multiply its texture coordinates with the vertex color
-        for (auto& vertex : vertices) {
-            vertex.tex[0].u *= ((vertex.colour >> 16) & 0xFF) / 255.0f;
-            vertex.tex[0].v *= ((vertex.colour >> 8) & 0xFF) / 255.0f;
-        }
-    } else if (texenv == 2) {
-        // GL_DECAL
-        // Iterate over each vertex and blend its texture coordinates with the vertex color using alpha blending
-        for (auto& vertex : vertices) {
-            float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
-            vertex.tex[0].u = (1.0f - alpha) * vertex.tex[0].u + alpha * ((vertex.colour >> 16) & 0xFF) / 255.0f;
-            vertex.tex[0].v = (1.0f - alpha) * vertex.tex[0].v + alpha * ((vertex.colour >> 8) & 0xFF) / 255.0f;
-        }
-    } else if (texenv == 3) {
-        // GL_BLEND
-        // Iterate over each vertex and blend its texture coordinates with the vertex color using blending functions
-        for (auto& vertex : vertices) {
-            float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
-            vertex.tex[0].u = vertex.tex[0].u * (1.0f - alpha) + ((vertex.colour >> 16) & 0xFF) / 255.0f * alpha;
-            vertex.tex[0].v = vertex.tex[0].v * (1.0f - alpha) + ((vertex.colour >> 8) & 0xFF) / 255.0f * alpha;
-        }
-    } else if (texenv == 4) {
-        // GL_ADD
-        // Iterate over each vertex and add its texture coordinates to the vertex color
-        for (auto& vertex : vertices) {
-            vertex.tex[0].u += ((vertex.colour >> 16) & 0xFF) / 255.0f;
-            vertex.tex[0].v += ((vertex.colour >> 8) & 0xFF) / 255.0f;
-        }
-    } else {
-                vampContext->glError = GL_INVALID_ENUM;
-                GenerateGLError(GL_INVALID_ENUM, "Invalid TexEnv mode");
+if (texenv == 0) {
+    // GL_REPLACE
+    // No modification needed, keep the original texture coordinates
+} else if (texenv == 1) {
+    // GL_MODULATE
+    // Iterate over each vertex and multiply its texture coordinates with the vertex color
+    for (auto& vertex : vertices) {
+        vertex.tex[0].u *= ((vertex.colour >> 16) & 0xFF) / 255.0f;
+        vertex.tex[0].v *= ((vertex.colour >> 8) & 0xFF) / 255.0f;
     }
+} else if (texenv == 2) {
+    // GL_DECAL
+    // Iterate over each vertex and blend its texture coordinates with the vertex color using alpha blending
+    for (auto& vertex : vertices) {
+        float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
+        vertex.tex[0].u = (1.0f - alpha) * vertex.tex[0].u + alpha * ((vertex.colour >> 16) & 0xFF) / 255.0f;
+        vertex.tex[0].v = (1.0f - alpha) * vertex.tex[0].v + alpha * ((vertex.colour >> 8) & 0xFF) / 255.0f;
+    }
+} else if (texenv == 3) {
+    // GL_BLEND
+    // Iterate over each vertex and blend its texture coordinates with the vertex color using blending functions
+    for (auto& vertex : vertices) {
+        float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
+        vertex.tex[0].u = vertex.tex[0].u * (1.0f - alpha) + ((vertex.colour >> 16) & 0xFF) / 255.0f * alpha;
+        vertex.tex[0].v = vertex.tex[0].v * (1.0f - alpha) + ((vertex.colour >> 8) & 0xFF) / 255.0f * alpha;
+    }
+} else if (texenv == 4) {
+    // GL_ADD
+    // Iterate over each vertex and add its texture coordinates to the vertex color
+    for (auto& vertex : vertices) {
+        vertex.tex[0].u += ((vertex.colour >> 16) & 0xFF) / 255.0f;
+        vertex.tex[0].v += ((vertex.colour >> 8) & 0xFF) / 255.0f;
+    }
+} else {
+    vampContext->glError = GL_INVALID_ENUM;
+    GenerateGLError(GL_INVALID_ENUM, "Invalid TexEnv mode");
+}
 }
 
+void ApplyBlendFunc(GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
 
 void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
 {
@@ -344,6 +342,7 @@ void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, 
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
 
     // Draw the indexed polygons using the Maggie-3D chip
     magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
@@ -364,6 +363,7 @@ void DrawPolygons(GLVampContext* vampContext, std::vector<MaggieVertex>* vertice
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
 
     // Draw the indexed polygons using the Maggie-3D chip
     magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
@@ -379,7 +379,8 @@ void DrawTriangleFan(GLVampContext* vampContext, std::vector<MaggieVertex>* vert
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
-
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
+	
     // Create an index buffer for triangle fan drawing
     std::vector<unsigned short> indices(vertices->size() - 2);
     for (size_t i = 0; i < indices.size(); i++) {
@@ -402,6 +403,7 @@ void DrawTriangleStrip(GLVampContext* vampContext, std::vector<MaggieVertex>* ve
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
 
     // Create an index buffer for triangle strip drawing
     std::vector<unsigned short> indices(vertices->size() * 2);
@@ -424,6 +426,7 @@ void DrawLineStrip(GLVampContext* vampContext, std::vector<MaggieVertex>* vertic
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
 
     // Iterate over the vertices and draw line segments between adjacent vertices
     for (size_t i = 0; i < vertices->size() - 1; i++) {
@@ -450,7 +453,8 @@ void DrawLines(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, 
 
     ApplyFogging(vampContext, vertices);
     ApplyTexEnv(vampContext,*vertices, texenv);
-
+	if (vampContext->useBlending) ApplyBlendFunc(vampContext,*vertices);
+	
     // Iterate over the vertices and draw line segments between pairs of vertices
     for (size_t i = 0; i < vertices->size() - 1; i += 2) {
         const MaggieVertex& startVertex = (*vertices)[i];
