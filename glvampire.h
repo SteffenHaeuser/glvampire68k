@@ -4,11 +4,6 @@
 #include <maggie_vec.h>
 #include <intuition/intuition.h>
 
-typedef enum {
-    GL_MODULATE=11,
-    GL_REPLACE
-} GLenum;
-
 // Matrix Manipulation
 
 void glPushMatrix(); // DONE
@@ -93,124 +88,124 @@ void glTexParameteri(int i, int j, int k); // DONE (Partially)
 // Optional (as in REALLY REALLY optional, can be removed)
 
 void glFogi(int i, int j); // DONE
-void glFogfv(int i, float *col);
+void glFogfv(int i, float *col); // DONE
 void glReadPixels(int x, int y, int w, int h, int i, int j, void *k); // DONE
 void glFogf(int i, float j);
 char *glGetString(int i); // DONE
 
 
 #define GL_NO_ERROR 0
-#define GL_TEXTURE_2D 1
-#define GL_SRC_ALPHA 2
-#define GL_ONE_MINUS_SRC_ALPHA 3
-#define GL_GREATER 4
-#define GL_BLEND 5
-#define GL_ALPHA_TEXT 6
-#define GL_COLOR_BUFFER_BIT 7
-#define GL_ALPHA_TEST 8
-#define MGL_FLATFAN 9
-#define MGL_PERSPECTIVE_MAPPING 10
-#define GL_QUADS 13
-#define GL_SMOOTH 14
-#define GL_FLAT 15
-#define GL_TRIANGLE_STRIP 16
-#define GL_S 17
-#define GL_T 18
-#define GL_SPHERE_MAP 19
-#define GL_TEXTURE_GEN_MODE 20
-#define GL_TRIANGLE_FAN 21
-#define GL_TEXTURE_GEN_S 22
-#define GL_TEXTURE_GEN_T 23
-#define GL_FOG 24
-#define GL_RGBA 25
-#define GL_UNSIGNED_BYTE 26
-#define GL_TEXTURE_MIN_FILTER 27
-#define GL_TEXTURE_MAG_FILTER 28
-#define GL_NEAREST_MIPMAP_NEAREST 29
-#define GL_LINEAR_MIPMAP_NEAREST 30
-#define GL_NEAREST_MIPMAP_LINEAR 31
-#define GL_LINEAR_MIPMAP_LINEAR 32
-#define GL_TEXTURE_ENV 33
-#define GL_TEXTURE_ENV_MODE 34
-#define GL_NEAREST 35
-#define GL_LINEAR 36
-#define GL_ONE 37
-#define GL_DEPTH_TEST 38
-#define GL_CULL_FACE 39
-#define GL_FRONT 40
-#define GL_BACK 41
-#define GL_PROJECTION 42
-#define GL_MODELVIEW 43
-#define GL_DECAL 44
-#define GL_DITHER 45
-#define GL_RENDERER 46
-#define GL_VERSION 47
-#define GL_EXTENSIONS 48
-#define GL_UNPACK_ALIGNMENT 49
-#define GL_PACK_ALIGNMENT 50
-#define GL_FRONT_AND_BACK 51
-#define GL_FILL 52
-#define GL_TEXTURE_WRAP_S 53
-#define GL_TEXTURE_WRAP_T 54
-#define GL_REPEAT 55
-#define GL_RGB 56
-#define GL_POLYGON 57
-#define GL_LINE_STRIP 58
-#define GL_ZERO 59
-#define GL_SRC_COLOR 60
-#define GL_INTENSITY8 61
-#define GL_LUMINANCE8 62
-#define MGL_Z_OFFSET 63
-#define GL_FOG_END 64
-#define GL_FOG_START 65
-#define GL_FOG_DENSITY 66
-#define GL_VENDOR 67
-#define GL_TRUE 68
-#define GL_FALSE 69
-#define GL_GEQUAL 70
-#define GL_DEPTH_BUFFER_BIT 71
-#define GL_LEQUAL 72
-#define GL_FOG_COLOR 73
-#define GL_FOG_MODE 74
-#define GL_EXP 75
-#define GL_EXP2 76
-#define GL_MODELVIEW_MATRIX 77
-#define GL_SCISSOR_TEST 78
-#define GL_LINES 79
-#define GL_DEBUG_SOURCE_API 80
-#define GL_DEBUG_SEVERITY_HIGH 81
-#define GL_DEBUG_SEVERITY_LOW 82
-#define GL_SOLID_FORMAT 83
-#define GL_DXT1 85 // Not part of OpenGL, just a little thing as Maggie supports this
-#define GL_NORMAL_MAP 86
-#define GL_UNSIGNED_SHORT 87
-#define GL_FLOAT 88
-#define GL_BGRA 89
-#define GL_BGR 90
-#define GL_FOG_COORD_SRC 91
-#define GL_ADD 92
-#define GL_CONSTANT_ALPHA 93
-#define GL_ONE_MINUS_CONSTANT_ALPHA 94
-#define GL_CONSTANT_COLOR 95
-#define GL_ONE_MINUS_CONSTANT_COLOR 96
-#define GL_ONE_MINUS_DST_ALPHA 97
-#define GL_DST_ALPHA 98
-#define GL_ONE_MINUS_DST_COLOR 99
-#define GL_ONE_MINUS_SRC_COLOR 100
-#define GL_DST_COLOR 101
-#define GL_FUNC_ADD 102
-#define GL_SRC_ALPHA_SATURATE 103
-#define GL_FUNC_SUBTRACT 104
-#define GL_FUNC_REVERSE_SUBTRACT 105
-#define GL_MIN 106
-#define GL_MAX 107
-#define GL_ALWAYS 108
-#define GL_NEVER 109
-#define GL_LESS 110
-#define GL_EQUAL 111
-#define GL_NOTEQUAL 112
+#define GL_MODULATE 0x2100
+#define GL_REPLACE 0x1E01
+#define GL_TEXTURE_2D 0x0DE1
+#define GL_SRC_ALPHA 0x0302
+#define GL_ONE_MINUS_SRC_ALPHA 0x0303
+#define GL_GREATER 0x0204
+#define GL_BLEND 0x0BE2
+#define GL_ALPHA_TEST 0x0BC0
+#define MGL_FLATFAN 1
+#define MGL_PERSPECTIVE_MAPPING 2
+#define GL_QUADS 0x0007
+#define GL_SMOOTH 0x1D01
+#define GL_FLAT 0x1D00
+#define GL_TRIANGLE_STRIP 0x0005
+#define GL_S 0x2000
+#define GL_T 0x2001
+#define GL_SPHERE_MAP 0x2402
+#define GL_TEXTURE_GEN_MODE 0x2500
+#define GL_TRIANGLE_FAN 0x0006
+#define GL_TEXTURE_GEN_S 0x0C60
+#define GL_TEXTURE_GEN_T 0x0C61
+#define GL_FOG 0x0B60
+#define GL_RGBA 0x1908
+#define GL_UNSIGNED_BYTE 0x1401
+#define GL_TEXTURE_MIN_FILTER 0x2801
+#define GL_TEXTURE_MAG_FILTER 0x2800
+#define GL_NEAREST_MIPMAP_NEAREST 0x2700
+#define GL_LINEAR_MIPMAP_NEAREST 0x2701
+#define GL_NEAREST_MIPMAP_LINEAR 0x2702
+#define GL_LINEAR_MIPMAP_LINEAR 0x2703
+#define GL_TEXTURE_ENV 0x2300
+#define GL_TEXTURE_ENV_MODE 0x2200
+#define GL_NEAREST 0x2600
+#define GL_LINEAR 0x2601
+#define GL_ONE 1
+#define GL_DEPTH_TEST 0x0B71
+#define GL_CULL_FACE 0x0B44
+#define GL_FRONT 0x0404
+#define GL_BACK 0x0405
+#define GL_PROJECTION 0x1701
+#define GL_MODELVIEW 0x1700
+#define GL_DECAL 0x2101
+#define GL_DITHER 0x0BD0
+#define GL_RENDERER 0x1F01
+#define GL_VERSION 0x1F02
+#define GL_EXTENSIONS 0x1F03
+#define GL_UNPACK_ALIGNMENT 0x0CF5
+#define GL_PACK_ALIGNMENT 0x0D05
+#define GL_FRONT_AND_BACK 0x0408
+#define GL_FILL 0x1B02
+#define GL_TEXTURE_WRAP_S 0x2802
+#define GL_TEXTURE_WRAP_T 0x2803
+#define GL_REPEAT 0x2901
+#define GL_RGB 0x1907
+#define GL_POLYGON 0x0009
+#define GL_LINE_STRIP 0x0003
+#define GL_ZERO 0
+#define GL_SRC_COLOR 0x0300
+#define GL_INTENSITY8 0x804B
+#define GL_LUMINANCE8 0x8040
+#define MGL_Z_OFFSET 3
+#define GL_FOG_END 0x0B64
+#define GL_FOG_START 0x0B63
+#define GL_FOG_DENSITY 0x0B62
+#define GL_VENDOR 0x1F00
+#define GL_TRUE 1
+#define GL_FALSE 0
+#define GL_GEQUAL 0x0206
+#define GL_DEPTH_BUFFER_BIT 0x00000100
+#define GL_LEQUAL 0x0203
+#define GL_FOG_COLOR 0x0B66
+#define GL_FOG_MODE 0x0B65
+#define GL_EXP 0x0800
+#define GL_EXP2 0x0801
+#define GL_MODELVIEW_MATRIX 0x0BA6
+#define GL_SCISSOR_TEST 0x0C11
+#define GL_LINES 0x0001
+#define GL_DEBUG_SOURCE_API 0x8246
+#define GL_DEBUG_SEVERITY_HIGH 0x9146
+#define GL_DEBUG_SEVERITY_LOW 0x9148
+#define GL_SOLID_FORMAT 0x0D4C
+#define GL_DXT1 0x83F1
+#define GL_NORMAL_MAP 0x8511
+#define GL_UNSIGNED_SHORT 0x1403
+#define GL_FLOAT 0x1406
+#define GL_BGRA 0x80E1
+#define GL_BGR 0x80E0
+#define GL_FOG_COORD_SRC 0x8450
+#define GL_ADD 0x0104
+#define GL_CONSTANT_ALPHA 0x8003
+#define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
+#define GL_CONSTANT_COLOR 0x8001
+#define GL_ONE_MINUS_CONSTANT_COLOR 0x8002
+#define GL_ONE_MINUS_DST_ALPHA 0x0305
+#define GL_DST_ALPHA 0x0304
+#define GL_ONE_MINUS_DST_COLOR 0x0307
+#define GL_ONE_MINUS_SRC_COLOR 0x0301
+#define GL_DST_COLOR 0x0306
+#define GL_FUNC_ADD 0x8006
+#define GL_SRC_ALPHA_SATURATE 0x0308
+#define GL_FUNC_SUBTRACT 0x800A
+#define GL_FUNC_REVERSE_SUBTRACT 0x800B
+#define GL_MIN 0x8007
+#define GL_MAX 0x8008
+#define GL_ALWAYS 0x0207
+#define GL_NEVER 0x0200
+#define GL_LESS 0x0201
+#define GL_EQUAL 0x0202
+#define GL_NOTEQUAL 0x0205
+#define GL_COLOR_BUFFER_BIT 0x00004000
 
-#define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
 #define GL_INVALID_VALUE 0x501
 #define GL_INVALID_OPERATION 0x502
@@ -293,6 +288,7 @@ struct GLVampContext
 	int alphaFunc;
 	float alphaRef;
 	int useAlphaFunc;
+	unsigned int *buffer32;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

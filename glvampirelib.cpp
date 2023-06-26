@@ -40,8 +40,6 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 {
 	volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
 	
-	int i;
-	float matrix[16];
 	if (vampContext->vampScreenPixels[vampContext->vampCurrentBuffer]==0) 
 	{
 		// glViewport was not yet called !!!
@@ -62,21 +60,9 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 	APTR pixels = vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];	
 	magSetDrawMode(vampContext->vampDrawModes);
 	magSetScreenMemory((void **)pixels, vampContext->vampWidth, vampContext->vampHeight);		
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->projectionMatrix.m[i / 4][i % 4];
-	}
-	magSetPerspectiveMatrix(matrix);
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->modelViewMatrix.m[i / 4][i % 4];
-	}
-	magSetViewMatrix(matrix);	
-	for (i=0;i<16;i++)
-	{
-		matrix[i] = vampContext->worldMatrix.m[i / 4][i % 4];
-	}	
-	magSetWorldMatrix(matrix);
+	magSetPerspectiveMatrix((float*)(&vampContext->projectionMatrix));
+	magSetViewMatrix((float*)(&vampContext->modelViewMatrix));	
+	magSetWorldMatrix((float*)(&vampContext->worldMatrix));
 	if (vampContext->currentTexture!=-1)
 	{
 		magSetTexture(0,vampContext->currentTexture);
