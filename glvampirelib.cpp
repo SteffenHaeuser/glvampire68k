@@ -83,28 +83,68 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 	}
 }
 
+unsigned int Convert16BitTo32Bit(unsigned short pixel16)
+{
+    UBYTE red5 = (pixel16 >> 11) & 0x1F;
+    UBYTE green6 = (pixel16 >> 5) & 0x3F;
+    UBYTE blue5 = pixel16 & 0x1F;
+    
+    ULONG red8 = (red5 << 3) | (red5 >> 2);
+    ULONG green8 = (green6 << 2) | (green6 >> 4);
+    ULONG blue8 = (blue5 << 3) | (blue5 >> 2);
+    
+    ULONG pixel32 = (red8 << 16) | (green8 << 8) | blue8;
+    return pixel32;
+}
+
+void Copy16BitTo32Bit(unsigned short * srcBuffer, unsigned int * destBuffer, int width, int height)
+{
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            unsigned short pixel16 = srcBuffer[y * width + x];
+            unsigned int pixel32 = Convert16BitTo32Bit(pixel16);
+            destBuffer[y * width + x] = pixel32;
+        }
+    }
+}
+
 extern "C" void GLUEndFrame(struct GLVampContext *vampContext)
 {
-	int borderWidth=0, borderHeight=0;
-	
-	if (vampContext->window)
-	{
-		borderWidth = vampContext->window->BorderLeft + vampContext->window->BorderRight;
-		borderHeight = vampContext->window->BorderTop + vampContext->window->BorderBottom;
-	}
-	
-	magEndScene();
-	if (vampContext->window)
-	{
-		if (vampContext->vampBpp==4)
-		{
-			WritePixelArray(vampContext->vampScreenPixels[vampContext->vampCurrentBuffer], 0, 0, vampContext->vampWidth * 4, vampContext->window->RPort, vampContext->window->BorderLeft, vampContext->window->BorderTop, vampContext->window->Width - borderWidth, vampContext->window->Height - borderHeight, RECTFMT_RGBA);
-		}
-		else
-		{
-			WritePixelArray(vampContext->vampScreenPixels[vampContext->vampCurrentBuffer], 0, 0, vampContext->vampWidth * 2, vampContext->window->RPort, vampContext->window->BorderLeft, vampContext->window->BorderTop, vampContext->window->Width - borderWidth, vampContext->window->Height - borderHeight, RECTFMT_RGB);			
-		}
-	}
+    int borderWidth = 0;
+    int borderHeight = 0;
+    
+    if (vampContext->window)
+    {
+        borderWidth = vampContext->window->BorderLeft + vampContext->window->BorderRight;
+        borderHeight = vampContext->window->BorderTop + vampContext->window->BorderBottom;
+    }
+    
+    magEndScene();
+    
+    if (vampContext->window)
+    {
+        if (vampContext->vampBpp == 2)
+        {
+            // Copy 16-bit buffer to 32-bit buffer
+            Copy16BitTo32Bit(vampContext->vampScreenPixels[vampContext->vampCurrentBuffer],
+                             vampContext->buffer32,
+                             vampContext->vampWidth,
+                             vampContext->vampHeight);
+        }
+        
+		WritePixelArray((vampContext->vampBpp == 4) ? reinterpret_cast<unsigned int*>(vampContext->vampScreenPixels[vampContext->vampCurrentBuffer]) : vampContext->buffer32,
+                0,
+                0,
+                vampContext->vampWidth * vampContext->vampBpp,
+                vampContext->window->RPort,
+                vampContext->window->BorderLeft,
+                vampContext->window->BorderTop,
+                vampContext->window->Width - borderWidth,
+                vampContext->window->Height - borderHeight,
+                RECTFMT_RGBA);
+    }
 }
 
 extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags)
