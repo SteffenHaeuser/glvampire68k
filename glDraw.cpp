@@ -327,6 +327,7 @@ if (texenv == 0) {
 
 void ApplyBlendFunc(GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
 void ApplyBlendEquation(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
+void ApplyAlphaFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
 
 void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
 {
@@ -347,6 +348,10 @@ void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, 
 	{
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
+	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
 	}
 
     // Draw the indexed polygons using the Maggie-3D chip
@@ -373,6 +378,10 @@ void DrawPolygons(GLVampContext* vampContext, std::vector<MaggieVertex>* vertice
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
 	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
+	}	
 
     // Draw the indexed polygons using the Maggie-3D chip
     magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
@@ -392,6 +401,10 @@ void DrawTriangleFan(GLVampContext* vampContext, std::vector<MaggieVertex>* vert
 	{
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
+	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
 	}
 	
     // Create an index buffer for triangle fan drawing
@@ -421,6 +434,10 @@ void DrawTriangleStrip(GLVampContext* vampContext, std::vector<MaggieVertex>* ve
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
 	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
+	}	
 
     // Create an index buffer for triangle strip drawing
     std::vector<unsigned short> indices(vertices->size() * 2);
@@ -448,6 +465,10 @@ void DrawLineStrip(GLVampContext* vampContext, std::vector<MaggieVertex>* vertic
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
 	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
+	}	
 
     // Iterate over the vertices and draw line segments between adjacent vertices
     for (size_t i = 0; i < vertices->size() - 1; i++) {
@@ -479,6 +500,10 @@ void DrawLines(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, 
 		ApplyBlendFunc(vampContext,*vertices);
 		ApplyBlendEquation(vampContext,*vertices);
 	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
+	}	
 	
     // Iterate over the vertices and draw line segments between pairs of vertices
     for (size_t i = 0; i < vertices->size() - 1; i += 2) {

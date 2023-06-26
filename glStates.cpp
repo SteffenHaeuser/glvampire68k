@@ -24,7 +24,9 @@ extern "C" void GLEnable(struct GLVampContext* vampContext, int i)
 		case GL_BLEND:
 			vampContext->useBlending = true;
 			break;
-        // Add more cases for other GL_ENABLE flags if needed
+		case GL_ALPHA_TEST:
+			vampContext->useAlphaFunc = true;
+			break;
         default:
             break;
     }
@@ -42,7 +44,9 @@ extern "C" void GLDisable(struct GLVampContext* vampContext, int i)
 		case GL_BLEND:
 			vampContext->useBlending = false;
 			break;
-        // Add more cases for other GL_DISABLE flags if needed
+		case GL_ALPHA_TEST:
+			vampContext->useAlphaFunc = false;
+			break;
         default:
             break;
     }

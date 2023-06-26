@@ -13,6 +13,96 @@
 
 extern struct Library *MaggieBase;
 
+extern "C" void GLAlphaFunc(struct GLVampContext* vampContext, int i, float j)
+{
+	vampContext->alphaFunc = i;
+	vampContext->alphaRef = j;
+}
+
+void ApplyAlphaFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices)
+{
+	int alphaFunc = vampContext->alphaFunc;
+	float alphaRef = vampContext->alphaRef;
+    switch (alphaFunc) {
+        case GL_NEVER:
+            // Alpha test logic for GL_NEVER
+            // Reject all fragments by setting the alpha value to 0
+            for (auto& vertex : vertices) {
+                vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+            }
+            break;
+        case GL_LESS:
+            // Alpha test logic for GL_LESS
+            // Pass fragments with alpha value less than the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha < alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_EQUAL:
+            // Alpha test logic for GL_EQUAL
+            // Pass fragments with alpha value equal to the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha != alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_LEQUAL:
+            // Alpha test logic for GL_LEQUAL
+            // Pass fragments with alpha value less than or equal to the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha > alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_GREATER:
+            // Alpha test logic for GL_GREATER
+            // Pass fragments with alpha value greater than the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha <= alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_NOTEQUAL:
+            // Alpha test logic for GL_NOTEQUAL
+            // Pass fragments with alpha value not equal to the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha == alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_GEQUAL:
+            // Alpha test logic for GL_GEQUAL
+            // Pass fragments with alpha value greater than or equal to the reference value
+            for (auto& vertex : vertices) {
+                float alpha = static_cast<float>(vertex.colour >> 24) / 255.0f; // Get the alpha value
+                if (alpha < alphaRef) {
+                    vertex.colour &= 0x00FFFFFF; // Clear the alpha component
+                }
+            }
+            break;
+        case GL_ALWAYS:
+            // Alpha test logic for GL_ALWAYS
+            // Pass all fragments (no modification needed)
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid alphaFunc value");
+            break;
+    }
+}
+
+
 extern "C" void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
 {
 	if (i==GL_TEXTURE_2D)

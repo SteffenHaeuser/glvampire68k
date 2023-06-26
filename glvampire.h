@@ -204,6 +204,11 @@ char *glGetString(int i); // DONE
 #define GL_FUNC_REVERSE_SUBTRACT 105
 #define GL_MIN 106
 #define GL_MAX 107
+#define GL_ALWAYS 108
+#define GL_NEVER 109
+#define GL_LESS 110
+#define GL_EQUAL 111
+#define GL_NOTEQUAL 112
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
@@ -285,6 +290,9 @@ struct GLVampContext
 	int blendFuncDestRGB;
 	int blendFuncSrcAlpha;
 	int blendFuncDestAlpha;
+	int alphaFunc;
+	float alphaRef;
+	int useAlphaFunc;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 
