@@ -229,6 +229,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	vampContext->fogParams.color = 0xFFFFFFFF;
 	vampContext->useBlending = 0;
 	vampContext->maxVampTex = 1;
+	vampContext->blendEquation = GL_FUNC_ADD;
 	vampContext->matrixStack = (void*)(new std::stack<mat4*>());
 	if (vampContext->matrixStack==0)
 	{

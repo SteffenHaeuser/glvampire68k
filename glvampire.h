@@ -198,6 +198,12 @@ char *glGetString(int i); // DONE
 #define GL_ONE_MINUS_DST_COLOR 99
 #define GL_ONE_MINUS_SRC_COLOR 100
 #define GL_DST_COLOR 101
+#define GL_FUNC_ADD 102
+#define GL_SRC_ALPHA_SATURATE 103
+#define GL_FUNC_SUBTRACT 104
+#define GL_FUNC_REVERSE_SUBTRACT 105
+#define GL_MIN 106
+#define GL_MAX 107
 
 #define GL_NO_ERROR 0
 #define GL_INVALID_ENUM 0x500
@@ -273,6 +279,7 @@ struct GLVampContext
 	int blendFuncSrc;
 	int blendFuncDest;
 	int useBlending;
+	int blendEquation;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 
