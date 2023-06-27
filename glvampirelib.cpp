@@ -480,7 +480,7 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	vampContext->currentMatrix = &vampContext->projectionMatrix;
 	vampContext->vampWidth = width;
 	vampContext->vampHeight = height;
-	vampContext->texenv = 0;
+	vampContext->texenv = GL_REPLACE;
 	vampContext->blendColor = 0xFFFFFFFF;
 	vampContext->blendFuncSrc = GL_ONE;
 	vampContext->blendFuncDest = GL_ONE;
@@ -491,6 +491,12 @@ extern "C" int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagI
 	vampContext->separateBlendFuncEnabled = 0;
 	vampContext->alphaFunc = GL_ALWAYS;
 	vampContext->alphaRef = 0.0f;
+	vampContext->combineRGB = GL_MODULATE;
+	vampContext->combineAlpha = GL_MODULATE;
+	vampContext->texEnvColor = 0xFFFFFFFF;
+	vampContext->combineRGBConstant = 0xFFFFFFFF;
+	vampContext->rgbScale = 1.0f;
+	vampContext->alphaScale = 1.0f;
 	vampContext->useAlphaFunc = 0;
 	vampContext->useFogging = 0;
 	vampContext->useFogCoordSrc = 0;

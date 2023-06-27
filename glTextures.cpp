@@ -13,11 +13,24 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLAlphaFunc(struct GLVampContext* vampContext, int i, float j)
+bool IsValidAlphaFunction(GLenum func)
 {
-	vampContext->alphaFunc = i;
-	vampContext->alphaRef = j;
+    return func == GL_NEVER || func == GL_LESS || func == GL_EQUAL || func == GL_LEQUAL ||
+           func == GL_GREATER || func == GL_NOTEQUAL || func == GL_GEQUAL || func == GL_ALWAYS;
 }
+
+extern "C" void GLAlphaFunc(struct GLVampContext* vampContext, GLenum func, GLfloat ref)
+{
+    if (!IsValidAlphaFunction(func)) {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid alpha function for GLAlphaFunc");
+        return;
+    }
+
+    vampContext->alphaFunc = func;
+    vampContext->alphaRef = ref;
+}
+
 
 void ApplyAlphaFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices)
 {
@@ -103,128 +116,138 @@ void ApplyAlphaFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>
 }
 
 
-extern "C" void GLBindTexture(struct GLVampContext *vampContext, int i, int j)
+extern "C" void GLBindTexture(struct GLVampContext *vampContext, GLenum target, GLuint texture)
 {
-	if (i==GL_TEXTURE_2D)
+	if (target == GL_TEXTURE_2D)
 	{
-		std::map<int,int> *vampTextureMap = (std::map<int,int> *)vampContext->vampTextureMap;
-		auto num = vampTextureMap->find(j);
-		if (num!=vampTextureMap->end())
+		std::map<int, int> *vampTextureMap = (std::map<int, int> *)vampContext->vampTextureMap;
+		auto num = vampTextureMap->find(texture);
+		if (num != vampTextureMap->end())
 		{
 			vampContext->currentTexture = num->second;
-			magSetTexture(0,vampContext->currentTexture);
+			magSetTexture(0, vampContext->currentTexture);
 		}
-		else 
+		else
 		{
 			char error[1024];
-			
-			sprintf(error,"No Texture %d was found on glBindTexture\n",i);
+
+			sprintf(error, "No Texture %d was found on glBindTexture\n", target);
 			vampContext->glError = GL_INVALID_OPERATION;
-			GenerateGLError(vampContext->glError,error);			
+			GenerateGLError(vampContext->glError, error);
 		}
 	}
 }
 
-extern "C" void GLTexImage2D(struct GLVampContext *vampContext, int i, int j, int k, int l, int m, int n, int o, int p, void *pixels)
+extern "C" void GLTexImage2D(struct GLVampContext *vampContext, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, void *pixels)
 {
 	int texHandle = -1;
-	int format=-1;
-	
-	if (p!=GL_UNSIGNED_BYTE)
+	GLint magFormat = -1;
+
+	if (type != GL_UNSIGNED_BYTE)
 	{
 		char error[1024];
-		
-		sprintf(error,"glTexImage2D currently only supports Textures in GL_UNSIGNED_BYTE\n");
+
+		sprintf(error, "glTexImage2D currently only supports Textures in GL_UNSIGNED_BYTE\n");
 		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError,error);
-		
-		return;			
+		GenerateGLError(vampContext->glError, error);
+
+		return;
 	}
-	
-	switch(o)
+
+	switch (format)
 	{
-		case GL_RGBA:
-			format = MAG_TEXFMT_RGBA;
-			break;
-		case GL_RGB:
-			format = MAG_TEXFMT_RGB;
-			break;
-		case GL_DXT1:
-			format = MAG_TEXFMT_DXT1;
-			break;
-		case GL_INTENSITY8:
-			break;
-		case GL_LUMINANCE8:
-			break;
-		default:
-			break;
+	case GL_RGBA:
+		magFormat = MAG_TEXFMT_RGBA;
+		break;
+	case GL_RGB:
+		magFormat = MAG_TEXFMT_RGB;
+		break;
+	case GL_DXT1:
+		magFormat = MAG_TEXFMT_DXT1;
+		break;
+	case GL_INTENSITY8:
+		break;
+	case GL_LUMINANCE8:
+		break;
+	default:
+		break;
 	}
-	if (format==-1)
+
+	if (magFormat == -1)
 	{
 		char error[1024];
-		
-		sprintf(error,"Invalid Texture Format for glTexImage2D: %d\n",o);
+
+		sprintf(error, "Invalid Texture Format for glTexImage2D: %d\n", format);
 		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError,error);
-		
-		return;		
+		GenerateGLError(vampContext->glError, error);
+
+		return;
 	}
-	if (i==GL_TEXTURE_2D)
+
+	if (target == GL_TEXTURE_2D)
 	{
-		std::map<int,int> *vampTextureMap;
-		vampTextureMap = (std::map<int,int>*)vampContext->vampTextureMap;
-		if (l*m==64*64) texHandle = magAllocateTexture(6);
-		else if (l*m==128*128) texHandle = magAllocateTexture(7);
-		else if (l*m==256*256) texHandle = magAllocateTexture(8);
-		if (!texHandle) 
+		std::map<int, int> *vampTextureMap;
+		vampTextureMap = (std::map<int, int>*)vampContext->vampTextureMap;
+
+		if (width * height == 64 * 64)
+			texHandle = magAllocateTexture(6);
+		else if (width * height == 128 * 128)
+			texHandle = magAllocateTexture(7);
+		else if (width * height == 256 * 256)
+			texHandle = magAllocateTexture(8);
+
+		if (!texHandle)
 		{
 			char error[1024];
-			
-			sprintf(error,"Could not allocate Texture in call to glexImage2D(%d,%d,%d,%d,%d,%d,%d,%d,ptr)",i,j,k,l,m,n,o,p);
+
+			sprintf(error, "Could not allocate Texture in call to glTexImage2D(%d, %d, %d, %d, %d, %d, %d, %d, ptr)", target, level, internalFormat, width, height, border, format, type);
 			vampContext->glError = GL_OUT_OF_MEMORY;
-			GenerateGLError(vampContext->glError,error);	
-	
+			GenerateGLError(vampContext->glError, error);
+
 			return;
 		}
+
 		vampTextureMap->insert(std::make_pair(vampContext->maxVampTex, texHandle));
 		vampContext->maxVampTex++;
-		magUploadTexture(texHandle, j, pixels, format);
+		magUploadTexture(texHandle, level, pixels, magFormat);
 	}
 }
 
-extern "C" void GLDeleteTextures(struct GLVampContext *vampContext, int num, void *v)
+extern "C" void GLDeleteTextures(struct GLVampContext *vampContext, GLsizei num, GLuint *textures)
 {
-	if (num==1)
+	if (num == 1)
 	{
-		int texnum = *((int*)(v));
-		
-		if (texnum!=0)
+		int texnum = *textures;
+
+		if (texnum != 0)
 		{
-			std::map<int,int> *vampTextureMap;
-			vampTextureMap = (std::map<int,int>*)vampContext->vampTextureMap;
+			std::map<int, int> *vampTextureMap;
+			vampTextureMap = (std::map<int, int>*)vampContext->vampTextureMap;
 			auto it = vampTextureMap->find(texnum);
-			if (it != vampTextureMap->end()) 
+			if (it != vampTextureMap->end())
 			{
 				int number = it->second;
 				vampTextureMap->erase(it);
 				magFreeTexture(number);
 			}
-			else 
+			else
 			{
 				char error[1024];
-				
+
 				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"Could not find texture %d\n",texnum);
-				GenerateGLError(vampContext->glError,error);					
+				sprintf(error, "Could not find texture %d\n", texnum);
+				GenerateGLError(vampContext->glError, error);
 			}
 		}
 	}
-	else 
+	else
 	{
 		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError,"glDeleteTextures currently only supports if first parameter is 1\n");
+		GenerateGLError(vampContext->glError, "glDeleteTextures currently only supports if first parameter is 1\n");
 	}
 }
+
+
 
 extern "C" void GLTexGeni(struct GLVampContext *vampContext, __attribute__((unused)) int i, int j, int k)
 {
@@ -328,10 +351,11 @@ extern "C" void GLTexParameteri(struct GLVampContext *vampContext, int i, int j,
 	}
 }
 
-extern "C" void GLTexEnvi(GLVampContext* vampContext, int target, int pname, int param)
+extern "C" void GLTexEnvi(GLVampContext* vampContext, GLenum target, GLenum pname, GLint param)
 {
     if (target != GL_TEXTURE_ENV) {
-        GenerateGLError(GL_INVALID_ENUM, "Invalid target for glTexEnvi");
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid target for glTexEnvi");
         return;
     }
 
@@ -339,37 +363,46 @@ extern "C" void GLTexEnvi(GLVampContext* vampContext, int target, int pname, int
         case GL_TEXTURE_ENV_MODE:
             switch (param) {
                 case GL_REPLACE:
-					vampContext->texenv = 0;
-					break;
-				case GL_MODULATE:
-					vampContext->texenv = 1;
-					break;
-				case GL_DECAL:
-					vampContext->texenv = 2;
-					break;
+                    vampContext->texenv = GL_REPLACE;
+                    break;
+                case GL_MODULATE:
+                    vampContext->texenv = GL_MODULATE;
+                    break;
+                case GL_DECAL:
+                    vampContext->texenv = GL_DECAL;
+                    break;
                 case GL_BLEND:
-					vampContext->texenv = 3;
-					break;
+                    vampContext->texenv = GL_BLEND;
+                    break;
                 case GL_ADD:
-                    vampContext->texenv = 4;
+                    vampContext->texenv = GL_ADD;
                     break;
                 default:
-					vampContext->glError = GL_INVALID_ENUM;
-                    GenerateGLError(GL_INVALID_ENUM, "Invalid parameter value for glTexEnvi");
+                    vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(vampContext->glError, "Invalid parameter value for glTexEnvi");
                     return;
             }
             break;
+        case GL_COMBINE_RGB:
+            // Handle GL_COMBINE_RGB parameter
+            vampContext->combineRGB = param;
+            break;
+        case GL_COMBINE_ALPHA:
+            // Handle GL_COMBINE_ALPHA parameter
+            vampContext->combineAlpha = param;
+            break;
         default:
-			vampContext->glError = GL_INVALID_ENUM;
-            GenerateGLError(GL_INVALID_ENUM, "Invalid parameter name for glTexEnvi");
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(vampContext->glError, "Invalid parameter name for glTexEnvi");
             return;
     }
 }
 
-extern "C" void GLTexEnvf(GLVampContext* vampContext, int target, int pname, float param)
+extern "C" void GLTexEnvf(GLVampContext* vampContext, GLenum target, GLenum pname, GLfloat param)
 {
     if (target != GL_TEXTURE_ENV) {
-        GenerateGLError(GL_INVALID_ENUM, "Invalid target for glTexEnvi");
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid target for glTexEnvf");
         return;
     }
 
@@ -377,29 +410,87 @@ extern "C" void GLTexEnvf(GLVampContext* vampContext, int target, int pname, flo
         case GL_TEXTURE_ENV_MODE:
             switch ((int)param) {
                 case GL_REPLACE:
-					vampContext->texenv = 0;
-					break;
-				case GL_MODULATE:
-					vampContext->texenv = 1;
-					break;
-				case GL_DECAL:
-					vampContext->texenv = 2;
-					break;
+                    vampContext->texenv = GL_REPLACE;
+                    break;
+                case GL_MODULATE:
+                    vampContext->texenv = GL_MODULATE;
+                    break;
+                case GL_DECAL:
+                    vampContext->texenv = GL_DECAL;
+                    break;
                 case GL_BLEND:
-					vampContext->texenv = 3;
-					break;
+                    vampContext->texenv = GL_BLEND;
+                    break;
                 case GL_ADD:
-                    vampContext->texenv = 4;
+                    vampContext->texenv = GL_ADD;
                     break;
                 default:
-					vampContext->glError = GL_INVALID_ENUM;
-                    GenerateGLError(GL_INVALID_ENUM, "Invalid parameter value for glTexEnvi");
+                    vampContext->glError = GL_INVALID_ENUM;
+                    GenerateGLError(vampContext->glError, "Invalid parameter value for glTexEnvf");
                     return;
             }
             break;
+        case GL_COMBINE_RGB:
+            // Handle GL_COMBINE_RGB parameter
+            vampContext->combineRGB = static_cast<GLint>(param);
+            break;
+        case GL_COMBINE_ALPHA:
+            // Handle GL_COMBINE_ALPHA parameter
+            vampContext->combineAlpha = static_cast<GLint>(param);
+            break;
         default:
-			vampContext->glError = GL_INVALID_ENUM;
-            GenerateGLError(GL_INVALID_ENUM, "Invalid parameter name for glTexEnvi");
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(vampContext->glError, "Invalid parameter name for glTexEnvf");
+            return;
+    }
+}
+
+ULONG ARGB32ColorFromFloats(float alpha, float red, float green, float blue)
+{
+    ULONG a = static_cast<ULONG>(alpha * 255.0f + 0.5f);
+    ULONG r = static_cast<ULONG>(red * 255.0f + 0.5f);
+    ULONG g = static_cast<ULONG>(green * 255.0f + 0.5f);
+    ULONG b = static_cast<ULONG>(blue * 255.0f + 0.5f);
+
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+void GLTexEnvfv(GLVampContext* vampContext, GLenum target, GLenum pname, const GLfloat* params)
+{
+    if (target != GL_TEXTURE_ENV) {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid target for glTexEnvfv");
+        return;
+    }
+
+    switch (pname) {
+        case GL_TEXTURE_ENV_COLOR:
+            // Handle GL_TEXTURE_ENV_COLOR parameter
+            vampContext->texEnvColor = ARGB32ColorFromFloats(params[0], params[1], params[2], params[3]);
+            break;
+        case GL_COMBINE_RGB:
+            // Handle GL_COMBINE_RGB parameter
+            vampContext->combineRGB = static_cast<GLint>(params[0]);
+            break;
+        case GL_COMBINE_ALPHA:
+            // Handle GL_COMBINE_ALPHA parameter
+            vampContext->combineAlpha = static_cast<GLint>(params[0]);
+            break;
+        case GL_RGB_SCALE:
+            // Handle GL_RGB_SCALE parameter
+            vampContext->rgbScale = params[0];
+            break;
+        case GL_ALPHA_SCALE:
+            // Handle GL_ALPHA_SCALE parameter
+            vampContext->alphaScale = params[0];
+            break;
+        case GL_COMBINE_CONSTANT:
+            // Handle GL_COMBINE_CONSTANT parameter
+            vampContext->combineRGBConstant = ARGB32ColorFromFloats(params[0], params[1], params[2], params[3]);
+            break;
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(vampContext->glError, "Invalid parameter name for glTexEnvfv");
             return;
     }
 }

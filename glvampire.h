@@ -4,50 +4,72 @@
 #include <maggie_vec.h>
 #include <intuition/intuition.h>
 
+#define GLfloat float
+#define GLint int
+#define GLuint unsigned int
+#define GLbitfield GLuint
+#define GLubyte unsigned char
+#define GLdouble double
+#define GLdouble double
+#define GLsizei size_t
+#define GLenum unsigned int
+#define GLushort unsigned short
+
 // Matrix Manipulation
 
-void glPushMatrix(); // DONE
-void glPopMatrix(); // DONE
-void glLoadMatrixf(float *f); // DONE
-void glScissor(int x, int y, int w, int h);
-void glViewport(int x, int y, int w, int h); // DONE (with possibly some questions)
-void glMatrixMode(int i); // DONE
-void glTranslatef(float x, float y, float z); // DONE
-void glRotatef(float i, float x, float y, float z); // DONE
-void glFrustum(int xmin, int mmax, int ymin, int ymax, int znear, int zfar); // DONE
-void glLoadIdentity(); // DONE
-void glOrtho(int i,int w, int h, int j, int k, int l); // DONE
-void glGetFloatv(int i, float *w); // Only used to acquire the World Matrix, DONE with this restriction
+void glPushMatrix();
+void glPopMatrix();
+void glLoadMatrixf(const GLfloat *matrix);
+void glScissor(GLint x, GLint y, GLsizei width, GLsizei height);
+void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+void glMatrixMode(GLenum mode);
+void glTranslatef(GLfloat x, GLfloat y, GLfloat z);
+void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
+void glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+void glLoadIdentity();
+void glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+void glGetFloatv(GLenum pname, GLfloat *params);
 
 // Colors
 
-void glClear(unsigned int i); // DONE
-void glClearColor(float i, float j, float k, float l); // DONE
-void glColor4f(float r, float g, float b, float a); // DONE
-void glColor4ub(int i, int j, int k, int l); // DONE
-void glColor3f(float x, float y, float z); // DONE
-void glColor4ubv(unsigned char *col); // DONE
-void glColor3fv(float *col); // DONE
-void glColor4fv(float *v); // DONE
-
-
-// Blending
-
-void glBlendFunc(int i, int j);
-void glAlphaFunc(int i, float j);
-void glShadeModel(int i); // switch between smooth and flat shading, not sure if a big problem if missing
+void glClear(GLbitfield mask);
+void glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+void glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+void glColor4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
+void glColor3f(GLfloat red, GLfloat green, GLfloat blue);
+void glColor4ubv(const GLubyte* color);
+void glColor3fv(const GLfloat* color);
+void glColor4fv(const GLfloat* color);
 
 // Textures and Vertices
 
-void glVertex2f(float x, float y); // DONE
-void glVertex3f(float x, float y, float z); // DONE
-void glTexCoord2f(float x, float y); // DONE
-void glNormal3f(float x, float y, float z); // DONE
-void glVertex3fv(float *vec); // DONE
-void glBindTexture(int i, int j); // DONE
-void glTexImage2D(int i, int j, int k, int l, int m, int n, int o, int p, void *pixels); 
-void glDeleteTextures(int num, void *v); // DONE
-void glTexSubImage2D(int i, int j, int xoff, int yoff, int w, int h, int form, int type, void *pixels);
+void glVertex2f(GLfloat x, GLfloat y);
+void glVertex3f(GLfloat x, GLfloat y, GLfloat z);
+void glTexCoord2f(GLfloat s, GLfloat t);
+void glNormal3f(GLfloat x, GLfloat y, GLfloat z);
+void glVertex3fv(const GLfloat *vec);
+void glBindTexture(GLenum target, GLuint texture);
+void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
+void glDeleteTextures(GLsizei num, const GLuint *textures);
+void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
+
+// States
+
+void glEnable(GLenum cap);
+void glDisable(GLenum cap);
+
+// Blending
+
+void glBlendFunc(GLenum sfactor, GLenum dfactor);
+void glAlphaFunc(GLenum func, GLfloat ref);
+void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+void glBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+void glBlendEquation(GLenum mode);
+
+// TexEnv
+
+void glTexEnvi(GLenum target, GLenum pname, GLint param);
+void glTexEnvf(GLenum target, GLenum pname, GLfloat param);
 
 // Stuff which is probably only used for Default settings and probably can be removed
 
@@ -55,11 +77,7 @@ void glDepthMask(int i); // DONE
 void glCullFace(int i); // DONE (but not completely implemented)
 void glDrawBuffer(int i); // DONE (does nothing)
 void glPolygonMode(int i, int j); // DONE
-
-// States
-
-void glEnable(int i); 
-void glDisable(int i);
+void glShadeModel(int i); // switch between smooth and flat shading, not sure if a big problem if missing
 
 // Handling, a lot of it can be removed
 
@@ -75,11 +93,6 @@ void glTexGeni(int i, int j, int k); // DONE (Partially)
 
 void glDepthRange(int i, int j);
 void glDepthFunc(int i); // DONE
-
-// TexEnv
-
-void glTexEnvi(int i, int j, int k);
-void glTexEnvf(int i, int j, int k);
 
 // TexParameter
 
@@ -205,6 +218,18 @@ char *glGetString(int i); // DONE
 #define GL_EQUAL 0x0202
 #define GL_NOTEQUAL 0x0205
 #define GL_COLOR_BUFFER_BIT 0x00004000
+#define GL_SRC1_COLOR 0x88F9
+#define GL_SRC1_ALPHA 0x8589
+#define GL_ONE_MINUS_SRC1_COLOR 0x88FA
+#define GL_ONE_MINUS_SRC1_ALPHA 0x88FB
+#define GL_COMBINE_TEXTURE 0x8575
+#define GL_COMBINE_PREVIOUS 0x8578
+#define GL_COMBINE_CONSTANT 0x8576
+#define GL_COMBINE_RGB 0x8571
+#define GL_COMBINE_ALPHA 0x8572
+#define GL_TEXTURE_ENV_COLOR 0x2201
+#define GL_RGB_SCALE 0x8573
+#define GL_ALPHA_SCALE 0x0D1C
 
 #define GL_INVALID_ENUM 0x500
 #define GL_INVALID_VALUE 0x501
@@ -215,10 +240,6 @@ char *glGetString(int i); // DONE
 #define GL_INVALID_FRAMEBUFFER_OPERATION 0x506
 #define GL_CONTEXT_LOST 0x507
 #define GL_TABLE_TOO_LARGE 0x8031
-
-#define GLfloat float
-#define GLint int
-#define GLdouble double
 
 typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
 
@@ -289,6 +310,12 @@ struct GLVampContext
 	float alphaRef;
 	int useAlphaFunc;
 	unsigned int *buffer32;
+	GLint combineRGB;     
+    GLint combineAlpha;  
+    GLfloat rgbScale;      
+    GLfloat alphaScale;   
+	ULONG texEnvColor;
+	ULONG combineRGBConstant;
 	DebugMessageCallbackFunc glDebugMessage;
 };
 

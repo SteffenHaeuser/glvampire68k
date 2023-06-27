@@ -284,50 +284,127 @@ void ApplyFogging(GLVampContext* vampContext, std::vector<MaggieVertex>* vertice
     }
 }
 
-void ApplyTexEnv(struct GLVampContext *vampContext, std::vector<MaggieVertex>& vertices, int texenv)
-{
-if (texenv == 0) {
-    // GL_REPLACE
-    // No modification needed, keep the original texture coordinates
-} else if (texenv == 1) {
-    // GL_MODULATE
-    // Iterate over each vertex and multiply its texture coordinates with the vertex color
-    for (auto& vertex : vertices) {
-        vertex.tex[0].u *= ((vertex.colour >> 16) & 0xFF) / 255.0f;
-        vertex.tex[0].v *= ((vertex.colour >> 8) & 0xFF) / 255.0f;
-    }
-} else if (texenv == 2) {
-    // GL_DECAL
-    // Iterate over each vertex and blend its texture coordinates with the vertex color using alpha blending
-    for (auto& vertex : vertices) {
-        float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
-        vertex.tex[0].u = (1.0f - alpha) * vertex.tex[0].u + alpha * ((vertex.colour >> 16) & 0xFF) / 255.0f;
-        vertex.tex[0].v = (1.0f - alpha) * vertex.tex[0].v + alpha * ((vertex.colour >> 8) & 0xFF) / 255.0f;
-    }
-} else if (texenv == 3) {
-    // GL_BLEND
-    // Iterate over each vertex and blend its texture coordinates with the vertex color using blending functions
-    for (auto& vertex : vertices) {
-        float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
-        vertex.tex[0].u = vertex.tex[0].u * (1.0f - alpha) + ((vertex.colour >> 16) & 0xFF) / 255.0f * alpha;
-        vertex.tex[0].v = vertex.tex[0].v * (1.0f - alpha) + ((vertex.colour >> 8) & 0xFF) / 255.0f * alpha;
-    }
-} else if (texenv == 4) {
-    // GL_ADD
-    // Iterate over each vertex and add its texture coordinates to the vertex color
-    for (auto& vertex : vertices) {
-        vertex.tex[0].u += ((vertex.colour >> 16) & 0xFF) / 255.0f;
-        vertex.tex[0].v += ((vertex.colour >> 8) & 0xFF) / 255.0f;
-    }
-} else {
-    vampContext->glError = GL_INVALID_ENUM;
-    GenerateGLError(GL_INVALID_ENUM, "Invalid TexEnv mode");
-}
-}
-
 void ApplyBlendFunc(GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
 void ApplyBlendEquation(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
 void ApplyAlphaFunc(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices);
+
+float ARGB32ColorToFloat(ULONG color)
+{
+    float red = ((color >> 16) & 0xFF) / 255.0f;
+    float green = ((color >> 8) & 0xFF) / 255.0f;
+    float blue = (color & 0xFF) / 255.0f;
+    float alpha = ((color >> 24) & 0xFF) / 255.0f;
+
+    return red * alpha + green * alpha + blue * alpha;
+}
+
+void ApplyTexEnv(struct GLVampContext* vampContext, std::vector<MaggieVertex>& vertices, int texenv)
+{
+    // Check if the texEnvColor is the default value (0xFFFFFFFF)
+    bool isDefaultTexEnvColor = (vampContext->texEnvColor == 0xFFFFFFFF);
+
+    switch (texenv) {
+        case GL_REPLACE:
+            // GL_REPLACE
+            // No modification needed, keep the original texture coordinates
+            break;
+            
+        case GL_MODULATE:
+            // GL_MODULATE
+            // Iterate over each vertex and multiply its texture coordinates with the vertex color
+            for (auto& vertex : vertices) {
+                vertex.tex[0].u *= ((vertex.colour >> 16) & 0xFF) / 255.0f;
+                vertex.tex[0].v *= ((vertex.colour >> 8) & 0xFF) / 255.0f;
+            }
+            break;
+            
+        case GL_DECAL:
+            // GL_DECAL
+            // Iterate over each vertex and blend its texture coordinates with the vertex color using alpha blending
+            for (auto& vertex : vertices) {
+                float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
+                vertex.tex[0].u = (1.0f - alpha) * vertex.tex[0].u + alpha * ((vertex.colour >> 16) & 0xFF) / 255.0f;
+                vertex.tex[0].v = (1.0f - alpha) * vertex.tex[0].v + alpha * ((vertex.colour >> 8) & 0xFF) / 255.0f;
+            }
+            break;
+            
+        case GL_BLEND:
+            // GL_BLEND
+            // Iterate over each vertex and blend its texture coordinates with the vertex color using blending functions
+            for (auto& vertex : vertices) {
+                float alpha = ((vertex.colour >> 24) & 0xFF) / 255.0f;
+                vertex.tex[0].u = vertex.tex[0].u * (1.0f - alpha) + ((vertex.colour >> 16) & 0xFF) / 255.0f * alpha;
+                vertex.tex[0].v = vertex.tex[0].v * (1.0f - alpha) + ((vertex.colour >> 8) & 0xFF) / 255.0f * alpha;
+            }
+            break;
+            
+        case GL_ADD:
+            // GL_ADD
+            // Iterate over each vertex and add its texture coordinates to the vertex color
+            for (auto& vertex : vertices) {
+                vertex.tex[0].u += ((vertex.colour >> 16) & 0xFF) / 255.0f;
+                vertex.tex[0].v += ((vertex.colour >> 8) & 0xFF) / 255.0f;
+            }
+            break;
+        
+        case GL_COMBINE_RGB:
+            // GL_COMBINE_RGB
+            // Perform RGB combining based on source factors and operands
+            for (auto& vertex : vertices) {
+                // Apply RGB combining based on specified source factors and operands
+                float srcRGB = 1.0f;
+                float operandRGB = 0.0f;
+
+                // Assign the appropriate values based on the specified combineRGB values
+                switch (vampContext->combineRGB) {
+                    case GL_COMBINE_CONSTANT:
+                        srcRGB = ARGB32ColorToFloat(vampContext->combineRGBConstant);
+                        break;
+                    case GL_COMBINE_PREVIOUS:
+                        srcRGB = vertex.tex[0].u;
+                        break;
+                    case GL_COMBINE_TEXTURE:
+                        srcRGB = vertex.tex[0].v;
+                        break;
+                    // Add cases for other combineRGB source options as needed
+                }
+
+                switch (vampContext->combineAlpha) {
+                    case GL_SRC_COLOR:
+                        operandRGB = ((vertex.colour >> 16) & 0xFF) / 255.0f;
+                        break;
+                    case GL_ONE_MINUS_SRC_COLOR:
+                        operandRGB = 1.0f - ((vertex.colour >> 16) & 0xFF) / 255.0f;
+                        break;
+                    // Add cases for other combineRGB operand options as needed
+                }
+
+                // Perform the RGB combining calculation
+                vertex.tex[0].u = srcRGB * operandRGB + vampContext->alphaScale;
+                vertex.tex[0].v = srcRGB * operandRGB + vampContext->alphaScale;
+
+                // Apply texEnvColor modulation if GL_COMBINE_RGB involves GL_COMBINE_CONSTANT and texEnvColor is not the default
+                if (!isDefaultTexEnvColor && vampContext->combineRGB == GL_COMBINE_CONSTANT) {
+                    float red = ((vampContext->texEnvColor >> 16) & 0xFF) / 255.0f;
+                    float green = ((vampContext->texEnvColor >> 8) & 0xFF) / 255.0f;
+                    float blue = (vampContext->texEnvColor & 0xFF) / 255.0f;
+
+                    vertex.tex[0].u *= red * vampContext->rgbScale;
+                    vertex.tex[0].v *= green * vampContext->rgbScale;
+                    vertex.tex[0].w *= blue * vampContext->alphaScale;
+                }
+            }
+            break;
+
+        // Existing cases
+
+        default:
+            vampContext->glError = GL_INVALID_ENUM;
+            GenerateGLError(GL_INVALID_ENUM, "Invalid TexEnv mode");
+            break;
+    }
+}
+
 
 void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
 {

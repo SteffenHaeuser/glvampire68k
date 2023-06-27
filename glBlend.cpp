@@ -61,35 +61,78 @@ ULONG getCurrentColor(const MaggieVertex& vertex, struct GLVampContext* vampCont
     return color;
 }
 
-extern "C" void GLBlendColor(struct GLVampContext* vampContext, float r, float g, float b, float a)
+int IsValidBlendFactor(GLenum factor)
 {
+    return factor == GL_ZERO || factor == GL_ONE || factor == GL_SRC_COLOR || factor == GL_ONE_MINUS_SRC_COLOR ||
+           factor == GL_DST_COLOR || factor == GL_ONE_MINUS_DST_COLOR || factor == GL_SRC_ALPHA ||
+           factor == GL_ONE_MINUS_SRC_ALPHA || factor == GL_DST_ALPHA || factor == GL_ONE_MINUS_DST_ALPHA ||
+           factor == GL_CONSTANT_COLOR || factor == GL_ONE_MINUS_CONSTANT_COLOR ||
+           factor == GL_CONSTANT_ALPHA || factor == GL_ONE_MINUS_CONSTANT_ALPHA ||
+           factor == GL_SRC_ALPHA_SATURATE || factor == GL_SRC1_COLOR || factor == GL_ONE_MINUS_SRC1_COLOR ||
+           factor == GL_SRC1_ALPHA || factor == GL_ONE_MINUS_SRC1_ALPHA;
+}
+
+extern "C" void GLBlendColor(struct GLVampContext* vampContext, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+{
+    if (r < 0.0f || r > 1.0f || g < 0.0f || g > 1.0f || b < 0.0f || b > 1.0f || a < 0.0f || a > 1.0f) {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(vampContext->glError, "Invalid color components for GLBlendColor");
+        return;
+    }
+
     // Normalize the color components from the range 0.0-1.0 to 0-255
     unsigned char red = static_cast<unsigned char>(r * 255.0f);
     unsigned char green = static_cast<unsigned char>(g * 255.0f);
     unsigned char blue = static_cast<unsigned char>(b * 255.0f);
     unsigned char alpha = static_cast<unsigned char>(a * 255.0f);
-    
-    // Pack the color components into a single ULONG value using ARGB32 format
+
+    // Pack the color components into a single GLuint value using ARGB32 format
     vampContext->blendColor = (alpha << 24) | (red << 16) | (green << 8) | blue;
 }
 
-extern "C" void GLBlendFunc(struct GLVampContext* vampContext, int i, int j)
+extern "C" void GLBlendFunc(struct GLVampContext* vampContext, GLenum srcFactor, GLenum destFactor)
 {
-	vampContext->blendFuncSrc = i;
-	vampContext->blendFuncDest = j;
+    if (!IsValidBlendFactor(srcFactor) || !IsValidBlendFactor(destFactor)) {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid blend factors for GLBlendFunc");
+        return;
+    }
+
+    vampContext->blendFuncSrc = srcFactor;
+    vampContext->blendFuncDest = destFactor;
 }
 
-extern "C" void GLBlendFuncSeparate(struct GLVampContext* vampContext, int srcRGB, int destRGB, int srcAlpha, int destAlpha)
+extern "C" void GLBlendFuncSeparate(struct GLVampContext* vampContext, GLenum srcRGB, GLenum destRGB, GLenum srcAlpha, GLenum destAlpha)
 {
+    if (!IsValidBlendFactor(srcRGB) || !IsValidBlendFactor(destRGB) || !IsValidBlendFactor(srcAlpha) || !IsValidBlendFactor(destAlpha)) {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid blend factors for GLBlendFuncSeparate");
+        return;
+    }
+
     vampContext->blendFuncSrcRGB = srcRGB;
     vampContext->blendFuncDestRGB = destRGB;
     vampContext->blendFuncSrcAlpha = srcAlpha;
     vampContext->blendFuncDestAlpha = destAlpha;
 }
 
-extern "C" void GLBlendEquation(struct GLVampContext* vampContext, int mode)
+
+int IsValidBlendEquationMode(GLenum mode)
 {
-	vampContext->blendEquation = mode;
+    return mode == GL_FUNC_ADD || mode == GL_FUNC_SUBTRACT || mode == GL_FUNC_REVERSE_SUBTRACT ||
+           mode == GL_MIN || mode == GL_MAX;
+}
+
+
+extern "C" void GLBlendEquation(struct GLVampContext* vampContext, GLenum mode)
+{
+    if (!IsValidBlendEquationMode(mode)) {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Invalid blend equation mode for GLBlendEquation");
+        return;
+    }
+
+    vampContext->blendEquation = mode;
 }
 
 ULONG getConstantAlpha(struct GLVampContext *vampContext)
