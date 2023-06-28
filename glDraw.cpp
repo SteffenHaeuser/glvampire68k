@@ -104,7 +104,7 @@ extern "C" void GLFogi(struct GLVampContext* vampContext, GLenum pname, GLint pa
 {
     switch (pname) {
         case GL_FOG_MODE: {
-            FogMode mode;
+            GLenum mode;
 
             switch (param) {
                 case GL_LINEAR:
@@ -173,7 +173,7 @@ extern "C" void GLFogf(struct GLVampContext* vampContext, GLenum pname, GLfloat 
 {
     switch (pname) {
         case GL_FOG_MODE: {
-            FogMode mode;
+            GLenum mode;
 
             if (param == GL_LINEAR)
                 mode = FOG_LINEAR;

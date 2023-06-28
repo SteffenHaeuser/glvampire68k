@@ -233,6 +233,12 @@ void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
 #define GL_TEXTURE_ENV_COLOR 0x2201
 #define GL_RGB_SCALE 0x8573
 #define GL_ALPHA_SCALE 0x0D1C
+#define FOG_LINEAR 0x2601
+#define FOG_EXP 0x0800
+#define FOG_EXP2 0x0801
+
+#define GL_FOG_COORD 0x8451
+#define GL_FRAGMENT_DEPTH 0x8452
 
 #define GL_INVALID_ENUM 0x500
 #define GL_INVALID_VALUE 0x501
@@ -244,22 +250,9 @@ void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
 #define GL_CONTEXT_LOST 0x507
 #define GL_TABLE_TOO_LARGE 0x8031
 
-typedef void (*DebugMessageCallbackFunc)(int source, int type, unsigned int id, int severity, int length, const char* message, const void* userParam);
-
-enum FogMode {
-    FOG_LINEAR,
-    FOG_EXP,
-    FOG_EXP2
-};
-
-enum FogCoordSrc {
-	GL_FOG_COORD,
-	GL_FRAGMENT_DEPTH
-};
-
 struct FogParams {
-    enum FogMode mode;
-	enum FogCoordSrc fogCoordSrc;
+    GLenum mode;
+	GLenum fogCoordSrc;
     float density;
     float start;
     float end;
