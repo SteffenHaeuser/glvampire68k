@@ -13,153 +13,155 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLColor4f(struct GLVampContext *vampContext, float r, float g, float b, float a)
+extern "C" void GLColor4f(struct GLVampContext *vampContext, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
-	unsigned char rdec = (unsigned char)(r*255.0f);
-	unsigned char gdec = (unsigned char)(g*255.0f);
-	unsigned char bdec = (unsigned char)(b*255.0f);
-	unsigned char adec = (unsigned char)(a*255.0f);
-	
-	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
-	
-	if (vampContext->manualDraw)
-	{
-			std::vector<MaggieVertex> *vertices;
-	
-			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
-	
-			if (!vertices->empty()) 
-			{
-				MaggieVertex& currentVertex = vertices->back();
-				currentVertex.colour = color;
-			}	
-			else
-			{
-				vampContext->glError = GL_INVALID_OPERATION;
-				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
-			}			
-	}
-	else magColour(color);
+    GLubyte rdec = (GLubyte)(r * 255.0f);
+    GLubyte gdec = (GLubyte)(g * 255.0f);
+    GLubyte bdec = (GLubyte)(b * 255.0f);
+    GLubyte adec = (GLubyte)(a * 255.0f);
+
+    GLuint color = (rdec << 16) | (gdec << 8) | (bdec) | (adec << 24);
+
+    if (vampContext->manualDraw)
+    {
+        std::vector<MaggieVertex> *vertices = (std::vector<MaggieVertex> *)vampContext->vertices;
+
+        if (!vertices->empty())
+        {
+            MaggieVertex &currentVertex = vertices->back();
+            currentVertex.colour = color;
+        }
+        else
+        {
+            vampContext->glError = GL_INVALID_OPERATION;
+            GenerateGLError(vampContext->glError, "glColor4f was called before glVertex was called\n");
+        }
+    }
+    else
+    {
+        magColour(color);
+    }
 }
 
-extern "C" void GLColor3f(struct GLVampContext *vampContext, float x, float y, float z)
+extern "C" void GLColor3f(struct GLVampContext *vampContext, GLfloat r, GLfloat g, GLfloat b)
 {
-	unsigned char rdec = (unsigned char)(x*255.0f);
-	unsigned char gdec = (unsigned char)(y*255.0f);
-	unsigned char bdec = (unsigned char)(z*255.0f);
-	unsigned char adec = 1;
-	
-	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
-	
-	if (vampContext->manualDraw)
-	{
-			std::vector<MaggieVertex> *vertices;
-	
-			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
-	
-			if (!vertices->empty()) 
-			{
-				MaggieVertex& currentVertex = vertices->back();
-				currentVertex.colour = color;
-			}	
-			else
-			{
-				vampContext->glError = GL_INVALID_OPERATION;
-				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
-			}			
-	}
-	else magColour(color);	
+    GLubyte rdec = (GLubyte)(r * 255.0f);
+    GLubyte gdec = (GLubyte)(g * 255.0f);
+    GLubyte bdec = (GLubyte)(b * 255.0f);
+    GLubyte adec = 1;
+
+    GLuint color = (rdec << 16) | (gdec << 8) | (bdec) | (adec << 24);
+
+    if (vampContext->manualDraw)
+    {
+        std::vector<MaggieVertex> *vertices = (std::vector<MaggieVertex> *)vampContext->vertices;
+
+        if (!vertices->empty())
+        {
+            MaggieVertex &currentVertex = vertices->back();
+            currentVertex.colour = color;
+        }
+        else
+        {
+            vampContext->glError = GL_INVALID_OPERATION;
+            GenerateGLError(vampContext->glError, "glColor3f was called before glVertex was called\n");
+        }
+    }
+    else
+    {
+        magColour(color);
+    }
 }
 
-extern "C" void GLColor4ub(struct GLVampContext *vampContext, int i, int j, int k, int l)
+extern "C" void GLColor4ub(struct GLVampContext *vampContext, GLubyte r, GLubyte g, GLubyte b, GLubyte a)
 {
-	unsigned char rdec = (unsigned char)i;
-	unsigned char gdec = (unsigned char)j;
-	unsigned char bdec = (unsigned char)k;
-	unsigned char adec = (unsigned char)l;
+    GLuint color = (r << 16) | (g << 8) | (b) | (a << 24);
 
-	int color = (rdec<<16)|(gdec<<8)|(bdec)|(adec<<24);
-	
-	if (vampContext->manualDraw)
-	{
-			std::vector<MaggieVertex> *vertices;
-	
-			vertices = (std::vector<MaggieVertex>*)vampContext->vertices;
-	
-			if (!vertices->empty()) 
-			{
-				MaggieVertex& currentVertex = vertices->back();
-				currentVertex.colour = color;
-			}	
-			else
-			{
-				vampContext->glError = GL_INVALID_OPERATION;
-				GenerateGLError(vampContext->glError,"glTexCoord2f was called before glVertex was called\n");
-			}			
-	}
-	else magColour(color);	
+    if (vampContext->manualDraw)
+    {
+        std::vector<MaggieVertex> *vertices = (std::vector<MaggieVertex> *)vampContext->vertices;
+
+        if (!vertices->empty())
+        {
+            MaggieVertex &currentVertex = vertices->back();
+            currentVertex.colour = color;
+        }
+        else
+        {
+            vampContext->glError = GL_INVALID_OPERATION;
+            GenerateGLError(vampContext->glError, "glColor4ub was called before glVertex was called\n");
+        }
+    }
+    else
+    {
+        magColour(color);
+    }
 }
 
-extern "C" void GLColor4ubv(struct GLVampContext *vampContext, unsigned char *col)
+extern "C" void GLColor4ubv(struct GLVampContext *vampContext, GLubyte *col)
 {
-	if (col!=0)
-	{
-		GLColor4ub(vampContext, col[0],col[1],col[2],col[3]);
-	}
-	else 
-	{
-		vampContext->glError = GL_INVALID_VALUE;
-		GenerateGLError(vampContext->glError,"Vector for glColor4ubv is null\n");	
-	}
+    if (col != nullptr)
+    {
+        GLColor4ub(vampContext, col[0], col[1], col[2], col[3]);
+    }
+    else
+    {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(vampContext->glError, "Vector for glColor4ubv is null\n");
+    }
 }
 
-extern "C" void GLColor4fv(struct GLVampContext *vampContext, float *v)
+extern "C" void GLColor4fv(struct GLVampContext *vampContext, GLfloat *v)
 {
-	if (v!=0)
-	{
-		GLColor4f(vampContext, v[0],v[1],v[2],v[3]);
-	}
-	else 
-	{
-		vampContext->glError = GL_INVALID_VALUE;
-		GenerateGLError(vampContext->glError,"Vector for glColor4fv is null\n");			
-	}
+    if (v != nullptr)
+    {
+        GLColor4f(vampContext, v[0], v[1], v[2], v[3]);
+    }
+    else
+    {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(vampContext->glError, "Vector for glColor4fv is null\n");
+    }
 }
 
-extern "C" void GLColor3fv(struct GLVampContext *vampContext, float *v)
+extern "C" void GLColor3fv(struct GLVampContext *vampContext, GLfloat *v)
 {
-	if (v!=0)
-	{
-		GLColor3f(vampContext,v[0],v[1],v[2]);
-	}
-	else 
-	{
-		vampContext->glError = GL_INVALID_VALUE;
-		GenerateGLError(vampContext->glError,"Vector for glColor3fv is null\n");			
-	}
+    if (v != nullptr)
+    {
+        GLColor3f(vampContext, v[0], v[1], v[2]);
+    }
+    else
+    {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(vampContext->glError, "Vector for glColor3fv is null\n");
+    }
 }
 
-extern "C" void GLClearColor(__attribute__((unused)) struct GLVampContext *vampContext, float i, float j, float k, float l)
+extern "C" void GLClearColor(__attribute__((unused)) struct GLVampContext *vampContext, GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
-	unsigned int rgb;
-	
-	unsigned char a = (unsigned char)(255*l);
-	unsigned char r = (unsigned char)(255*i);
-	unsigned char g = (unsigned char)(255*j);
-	unsigned char b = (unsigned char)(255*k);
-	rgb = (a<<24)|(r<<16)|(g<<8)|(b);
-	magClearColour(rgb);
+    GLuint rgb;
+
+    GLubyte aDec = (GLubyte)(255 * a);
+    GLubyte rDec = (GLubyte)(255 * r);
+    GLubyte gDec = (GLubyte)(255 * g);
+    GLubyte bDec = (GLubyte)(255 * b);
+
+    rgb = (aDec << 24) | (rDec << 16) | (gDec << 8) | (bDec);
+    magClearColour(rgb);
 }
 
-extern "C" void GLClear(struct GLVampContext *vampContext, unsigned int i)
+extern "C" void GLClear(struct GLVampContext *vampContext, GLuint mask)
 {
-	unsigned short clearMode = 0;
-	if (i&GL_COLOR_BUFFER_BIT) clearMode|=MAG_CLEAR_COLOUR;
-	if (i&GL_DEPTH_BUFFER_BIT) clearMode|=MAG_CLEAR_DEPTH;
-	if (clearMode>0) magClear(clearMode);
-	else
-	{
-		vampContext->glError = GL_INVALID_ENUM;
-		GenerateGLError(vampContext->glError,"Maggie Chip only support GL_LEQUAL for glDepthFunc\n");
-	}
+    GLushort clearMode = 0;
+    if (mask & GL_COLOR_BUFFER_BIT)
+        clearMode |= MAG_CLEAR_COLOUR;
+    if (mask & GL_DEPTH_BUFFER_BIT)
+        clearMode |= MAG_CLEAR_DEPTH;
+    if (clearMode > 0)
+        magClear(clearMode);
+    else
+    {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Maggie Chip only supports GL_LEQUAL for glDepthFunc\n");
+    }
 }

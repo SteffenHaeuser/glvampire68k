@@ -13,54 +13,66 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLViewport(struct GLVampContext *vampContext, __attribute__((unused)) int x, __attribute__((unused)) int y, int width, int height)
+extern "C" void GLViewport(struct GLVampContext *vampContext, __attribute__((unused)) GLint x, __attribute__((unused)) GLint y, GLsizei width, GLsizei height)
 {
-	if ((width!=vampContext->vampWidth)||(height!=vampContext->vampHeight))
-	{
-		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(GL_INVALID_OPERATION,"Called glViewport with invalid size, needs to be the same size as when calling gluOpenDisplayTags\n");
-        return;
-	}
-	if (vampContext->screenMemSize!=0)
-	{
-		FreeMem(vampContext->screenMem, vampContext->screenMemSize);		
-	}
-	vampContext->screenMem = (UBYTE*)AllocMem(width * height * vampContext->vampBpp * 3, MEMF_ANY | MEMF_CLEAR);
-    if (vampContext->screenMem== NULL)
+    if ((width != (GLsizei)vampContext->vampWidth) || (height != (GLsizei)vampContext->vampHeight))
     {
-		vampContext->glError = GL_OUT_OF_MEMORY;
-		GenerateGLError(GL_OUT_OF_MEMORY,"Could not allocate Screen Memory\n");
+        vampContext->glError = GL_INVALID_OPERATION;
+        GenerateGLError(GL_INVALID_OPERATION, "Called glViewport with invalid size, needs to be the same size as when calling gluOpenDisplayTags\n");
         return;
     }
-	vampContext->screenMemSize = width*height*vampContext->vampBpp*3;
-
-	vampContext->vampScreenPixels[0] = (UWORD *)vampContext->screenMem;
-	for(LONG i = 1; i < 3; ++i)
-		vampContext->vampScreenPixels[i] = vampContext->vampScreenPixels[i - 1] + width * height;
-	
-	APTR pixels = vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];
-	magSetScreenMemory((void **)pixels, width, height);
-	vampContext->vampWidth = width;
-	vampContext->vampHeight = height;
+    
+    if (vampContext->screenMemSize != 0)
+    {
+        FreeMem(vampContext->screenMem, vampContext->screenMemSize);
+    }
+    
+    vampContext->screenMem = (UBYTE*)AllocMem(width * height * vampContext->vampBpp * 3, MEMF_ANY | MEMF_CLEAR);
+    
+    if (vampContext->screenMem == NULL)
+    {
+        vampContext->glError = GL_OUT_OF_MEMORY;
+        GenerateGLError(GL_OUT_OF_MEMORY, "Could not allocate Screen Memory\n");
+        return;
+    }
+    
+    vampContext->screenMemSize = width * height * vampContext->vampBpp * 3;
+    
+    vampContext->vampScreenPixels[0] = (UWORD *)vampContext->screenMem;
+    
+    for (LONG i = 1; i < 3; ++i)
+    {
+        vampContext->vampScreenPixels[i] = vampContext->vampScreenPixels[i - 1] + width * height;
+    }
+    
+    APTR pixels = vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];
+    magSetScreenMemory((void **)pixels, width, height);
+    vampContext->vampWidth = width;
+    vampContext->vampHeight = height;
 }
 
-extern "C" void GLCullFace(struct GLVampContext *vampContext,int i)
+
+extern "C" void GLCullFace(struct GLVampContext *vampContext, GLenum mode)
 {
-	if (i==GL_FRONT)
-	{
-		vampContext->vampDrawModes|= MAG_DRAWMODE_CULL_CCW;
-	}
-	else
-	{
-		vampContext->vampDrawModes &= ~MAG_DRAWMODE_CULL_CCW;
-	}
+    if (mode == GL_FRONT)
+    {
+        vampContext->vampDrawModes |= MAG_DRAWMODE_CULL_CCW;
+    }
+    else
+    {
+        vampContext->vampDrawModes &= ~MAG_DRAWMODE_CULL_CCW;
+    }
 }
 
-extern "C" void GLDrawBuffer(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) int i)
+extern "C" void GLDrawBuffer(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) GLenum buf)
 {
 }
 
-extern "C" void GLPolygonMode(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) int i, __attribute__((unused)) int j)
+extern "C" void GLPolygonMode(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) GLenum face, __attribute__((unused)) GLenum mode)
+{
+}
+
+extern "C" void GLShadeModel(__attribute__((unused)) struct GLVampContext *vampContext, __attribute__((unused)) GLenum mode)
 {
 }
 
@@ -90,7 +102,7 @@ extern "C" void GLGetFloatv(struct GLVampContext *vampContext, int pname, float*
 	}
 }
 
-extern "C" void GLFrustum(struct GLVampContext *vampContext, float left, float right, float bottom, float top, float nearVal, float farVal) 
+extern "C" void GLFrustum(struct GLVampContext *vampContext, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearVal, GLdouble farVal) 
 {
     float A = (right + left) / (right - left);
     float B = (top + bottom) / (top - bottom);
@@ -124,18 +136,18 @@ extern "C" void GLOrtho(struct GLVampContext *vampContext, float left, float rig
     vampContext->currentMatrix->m[3][2] = tz;
 }
 
-extern "C" const char* GLGetString(__attribute__((unused)) struct GLVampContext *vampContext, unsigned int name)
+extern "C" const GLubyte* GLGetString(__attribute__((unused)) struct GLVampContext *vampContext, GLenum name)
 {
     switch (name)
     {
         case GL_VENDOR:
-            return "Steffen Häuser, tirionareonwe@gmail.com";
+            return (const GLubyte*)"Steffen Häuser, tirionareonwe@gmail.com";
         case GL_RENDERER:
-            return "Apollo Maggie Chip";
+            return (const GLubyte*)"Apollo Maggie Chip";
         case GL_VERSION:
-            return "0.0.1";
+            return (const GLubyte*)"0.0.1";
         case GL_EXTENSIONS:
-            return "";
+            return (const GLubyte*)"";
         default:
             return 0;
     }

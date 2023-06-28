@@ -6,14 +6,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Matrix Manipulation
+
 void GLMatrixMode(struct GLVampContext* vampContext, GLenum mode);
 void GLLoadIdentity(struct GLVampContext* vampContext);
-void GLLoadMatrix(struct GLVampContext* vampContext, const GLfloat* matrix);
+void GLLoadMatrixf(struct GLVampContext* vampContext, const GLfloat* matrix);
+void GLViewport(struct GLVampContext *vampContext, GLint x, GLint y, GLsizei width, GLsizei height);
 void GLRotatef(struct GLVampContext* vampContext, GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 void GLFrustum(struct GLVampContext* vampContext, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble nearVal, GLdouble farVal);
 void GLPushMatrix(struct GLVampContext* vampContext);
 void GLPopMatrix(struct GLVampContext* vampContext);
 void GLTranslatef(struct GLVampContext* vampContext, GLfloat x, GLfloat y, GLfloat z);
+
+// Colors
 
 void GLClearColor(struct GLVampContext *vampContext, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 void GLClear(struct GLVampContext *vampContext, GLbitfield mask);
@@ -24,8 +30,7 @@ void GLColor4ubv(struct GLVampContext *vampContext, GLubyte *color);
 void GLColor3fv(struct GLVampContext *vampContext, GLfloat *color);
 void GLColor4fv(struct GLVampContext *vampContext, GLfloat *color);
 
-void GLEnable(struct GLVampContext* vampContext, GLenum cap);
-void GLDisable(struct GLVampContext* vampContext, GLenum cap);
+// Textures and Vertices
 
 void GLVertex2f(struct GLVampContext *vampContext, GLfloat x, GLfloat y);
 void GLVertex3f(struct GLVampContext *vampContext, GLfloat x, GLfloat y, GLfloat z);
@@ -36,36 +41,70 @@ void GLBindTexture(struct GLVampContext *vampContext, GLenum target, GLuint text
 void GLTexImage2D(struct GLVampContext *vampContext, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, void *pixels);
 void GLDeleteTextures(struct GLVampContext *vampContext, GLsizei num, GLuint *textures);
 void GLTexSubImage2D(struct GLVampContext *vampContext, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels);
+
+// States
+
+void GLEnable(struct GLVampContext* vampContext, GLenum cap);
+void GLDisable(struct GLVampContext* vampContext, GLenum cap);
+
+// Blending
+
 void GLBlendFunc(struct GLVampContext* vampContext, GLenum sfactor, GLenum dfactor);
 void GLBlendFuncSeparate(struct GLVampContext* vampContext, GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 void GLAlphaFunc(struct GLVampContext* vampContext, GLenum func, GLfloat ref);
 void GLBlendColor(struct GLVampContext* vampContext, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 void GLBlendEquation(struct GLVampContext* vampContext, GLenum mode);
+
+// TexEnv
+
 void GLTexEnvi(struct GLVampContext* vampContext, GLenum target, GLenum pname, GLint param);
 void GLTexEnvf(struct GLVampContext* vampContext, GLenum target, GLenum pname, GLfloat param);
-void GLTexEnvfv(GLVampContext* vampContext, GLenum target, GLenum pname, const GLfloat* params);
+void GLTexEnvfv(struct GLVampContext* vampContext, GLenum target, GLenum pname, const GLfloat* params);
 
+// Fogging
+
+void GLFogi(struct GLVampContext* vampContext, GLenum pname, GLint param);
+void GLFogf(struct GLVampContext* vampContext, GLenum pname, GLfloat param);
+void GLFogfv(struct GLVampContext* vampContext, GLenum pname, const GLfloat* params);
+
+// Z Buffer
+
+void GLDepthFunc(struct GLVampContext* vampContext, GLenum func);
+void GLDepthMask(struct GLVampContext* vampContext, GLboolean flag);
+void GLDepthRange(struct GLVampContext* vampContext, GLdouble nearVal, GLdouble farVal);
+
+// TexGen
+
+void GLTexGeni(struct GLVampContext* vampContext, GLenum coord, GLenum pname, GLint param);
+
+// TexParameter
+
+void GLTexParameteri(struct GLVampContext* vampContext, GLenum target, GLenum pname, GLint param);
+
+// Other Functions
+
+void GLReadPixels(struct GLVampContext* vampContext, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels);
+GLenum GLGetError(struct GLVampContext *vampContext);
+void GLBegin(struct GLVampContext *vampContext, GLenum mode);
+void GLEnd(struct GLVampContext *vampContext);
+const GLubyte* GLGetString(struct GLVampContext *vampContext, GLenum name);
+void GLDrawBuffer(struct GLVampContext *vampContext, GLenum buf);
+void GLPolygonMode(struct GLVampContext *vampContext, GLenum face, GLenum mode);
+void GLCullFace(struct GLVampContext *vampContext, GLenum mode);
+void GLShadeModel(struct GLVampContext *vampContext, GLenum mode);
 void GLGenerateError(struct GLVampContext *vampContext, int type, const char* message);
+void GLDebugMessageCallback(struct GLVampContext *vampContext, GLDEBUGPROC callback, __attribute__((unused)) const void* userParam);
+
+// GLU Code
+
 int GLUOpenDisplayTags(struct GLVampContext *vampContext, struct TagItem *tags);
 void GLUCloseDisplay(struct GLVampContext *vampContext);
 void GLUBeginFrame(struct GLVampContext *vampContext);
 void GLUEndFrame(struct GLVampContext *vampContext);
-void GLDebugMessageCallback(struct GLVampContext *vampContext, DebugMessageCallbackFunc callback, const void* userParam);
-int GLGetError(struct GLVampContext *vampContext);
-void GLViewport(struct GLVampContext *vampContext, int x, int y, int width, int height);
-void GLBegin(struct GLVampContext *vampContext, int mode);
-void GLEnd(struct GLVampContext *vampContext);
-void GLDepthFunc(struct GLVampContext *vampContext, int i);
-void GLDepthMask(struct GLVampContext *vampContext, int i);
-void GLDrawBuffer(struct GLVampContext *vampContext, int i);
-void GLPolygonMode(struct GLVampContext *vampContext, int i, int j);
-void GLTexGeni(struct GLVampContext *vampContext, int i, int j, int k);
-void GLTexParameteri(struct GLVampContext *vampContext, int i, int j, int k);
-void GLFogi(struct GLVampContext* vampContext, int pname, int param);
-void GLFogf(struct GLVampContext* vampContext, int pname, float param);
-void GLFogfv(struct GLVampContext* vampContext, int i, float* col);
-void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, int height, unsigned int format, unsigned int type, void* pixels);
-const char* GLGetString(struct GLVampContext *vampContext, unsigned int name);
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

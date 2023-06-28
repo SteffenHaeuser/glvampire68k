@@ -12,25 +12,28 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLDepthFunc(struct GLVampContext *vampContext, int i)
+extern "C" void GLDepthFunc(struct GLVampContext* vampContext, GLenum func)
 {
-	if (i!=GL_LEQUAL)
-	{
-		vampContext->glError = GL_INVALID_ENUM;
-		GenerateGLError(vampContext->glError,"Maggie Chip only support GL_LEQUAL for glDepthFunc\n");
-	}
+    if (func != GL_LEQUAL)
+    {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "Maggie Chip only supports GL_LEQUAL for glDepthFunc\n");
+    }
 }
 
-extern "C" void GLDepthMask(struct GLVampContext *vampContext, int i)
+extern "C" void GLDepthMask(struct GLVampContext* vampContext, GLboolean flag)
 {
-	// Not really correct implementation, DepthMask should only affect the writing, which currently is not possible on the Maggie Chipset
-	
-	if (i==GL_TRUE)
-	{
-		vampContext->vampDrawModes|= MAG_DRAWMODE_DEPTHBUFFER;
-	}
-	else
-	{
-		vampContext->vampDrawModes &= ~MAG_DRAWMODE_DEPTHBUFFER;
-	}
+    // Not a correct implementation, provided as a placeholder
+    if (flag == GL_TRUE)
+    {
+        vampContext->vampDrawModes |= MAG_DRAWMODE_DEPTHBUFFER;
+    }
+    else
+    {
+        vampContext->vampDrawModes &= ~MAG_DRAWMODE_DEPTHBUFFER;
+    }
+}
+
+extern "C" void GLDepthRange(__attribute__((unused)) struct GLVampContext* vampContext, __attribute__((unused)) GLdouble nearVal, __attribute__((unused)) GLdouble farVal)
+{
 }

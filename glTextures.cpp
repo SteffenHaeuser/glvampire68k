@@ -213,141 +213,133 @@ extern "C" void GLTexImage2D(struct GLVampContext *vampContext, GLenum target, G
 	}
 }
 
-extern "C" void GLDeleteTextures(struct GLVampContext *vampContext, GLsizei num, GLuint *textures)
+extern "C" void GLDeleteTextures(struct GLVampContext* vampContext, GLsizei num, GLuint* textures)
 {
-	if (num == 1)
+    if (num < 1)
+    {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(vampContext->glError, "Invalid value for num in glDeleteTextures");
+        return;
+    }
+
+    std::map<int, int>* vampTextureMap = (std::map<int, int>*)vampContext->vampTextureMap;
+
+    for (GLsizei i = 0; i < num; ++i)
+    {
+        GLuint texnum = textures[i];
+
+        if (texnum != 0)
+        {
+            auto it = vampTextureMap->find(texnum);
+            if (it != vampTextureMap->end())
+            {
+                int number = it->second;
+                vampTextureMap->erase(it);
+                magFreeTexture(number);
+            }
+            else
+            {
+                char error[1024];
+                vampContext->glError = GL_INVALID_OPERATION;
+                sprintf(error, "Could not find texture %d\n", texnum);
+                GenerateGLError(vampContext->glError, error);
+            }
+        }
+    }
+}
+
+extern "C" void GLTexGeni(struct GLVampContext* vampContext, __attribute__((unused)) GLenum coord, GLenum pname, GLint param)
+{
+	if (pname != GL_TEXTURE_GEN_MODE)
 	{
-		int texnum = *textures;
+		vampContext->glError = GL_INVALID_OPERATION;
+		char error[1024];
+		sprintf(error, "glTexGeni currently only supports GL_TEXTURE_GEN_MODE, %d is not supported\n", pname);
+		GenerateGLError(vampContext->glError, error);
+		return;
+	}
 
-		if (texnum != 0)
-		{
-			std::map<int, int> *vampTextureMap;
-			vampTextureMap = (std::map<int, int>*)vampContext->vampTextureMap;
-			auto it = vampTextureMap->find(texnum);
-			if (it != vampTextureMap->end())
-			{
-				int number = it->second;
-				vampTextureMap->erase(it);
-				magFreeTexture(number);
-			}
-			else
-			{
-				char error[1024];
-
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error, "Could not find texture %d\n", texnum);
-				GenerateGLError(vampContext->glError, error);
-			}
-		}
+	if (param == GL_SPHERE_MAP)
+	{
+		vampContext->vampDrawModes |= MAG_DRAWMODE_TEXGEN_REFLECT;
+	}
+	else if (param == GL_NORMAL_MAP)
+	{
+		vampContext->vampDrawModes &= ~MAG_DRAWMODE_TEXGEN_REFLECT;
 	}
 	else
 	{
 		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError, "glDeleteTextures currently only supports if first parameter is 1\n");
+		char error[1024];
+		sprintf(error, "Invalid TexGen mode %d\n", param);
+		GenerateGLError(vampContext->glError, error);
 	}
 }
 
-
-
-extern "C" void GLTexGeni(struct GLVampContext *vampContext, __attribute__((unused)) int i, int j, int k)
+extern "C" void GLTexParameteri(struct GLVampContext* vampContext, GLenum target, GLenum pname, GLint param)
 {
-	if (j!=GL_TEXTURE_GEN_MODE)
+	if (target != GL_TEXTURE_2D)
 	{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"glTexGeni currently only supports GL_TEXTURE_GEN_MODE, %d is not supported\n",j);
-				GenerateGLError(vampContext->glError,error);		
-				
-				return;
+		vampContext->glError = GL_INVALID_OPERATION;
+		char error[1024];
+		sprintf(error, "glTexParameteri currently only supports GL_TEXTURE_2D, %d is not supported\n", target);
+		GenerateGLError(vampContext->glError, error);
+		return;
 	}
-	if (k==GL_SPHERE_MAP)
-	{
-		vampContext->vampDrawModes|= MAG_DRAWMODE_TEXGEN_REFLECT;
-	}
-	else if (k==GL_NORMAL_MAP)
-	{
-		vampContext->vampDrawModes &= ~MAG_DRAWMODE_TEXGEN_REFLECT;
-	}	
-	else
-	{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"Invalid TexGen mode %d\n",k);
-				GenerateGLError(vampContext->glError,error);		
-	}
-}
 
-extern "C" void GLTexParameteri(struct GLVampContext *vampContext, int i, int j, int k)
-{
-	if (i!=GL_TEXTURE_2D)
+	if (pname == GL_TEXTURE_MIN_FILTER)
 	{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"glTexParameteri currently only supports GL_TEXTURE_2D, %d is not supported\n",i);
-				GenerateGLError(vampContext->glError,error);		
-				
-				return;
-	}	
-	if (j == GL_TEXTURE_MIN_FILTER)
-	{
-		if (k == GL_LINEAR)
+		if (param == GL_LINEAR)
 		{
-			vampContext->vampDrawModes|= MAG_DRAWMODE_BILINEAR;		
+			vampContext->vampDrawModes |= MAG_DRAWMODE_BILINEAR;
 		}
-		else if (k == GL_NEAREST)
+		else if (param == GL_NEAREST)
 		{
 			vampContext->vampDrawModes &= ~MAG_DRAWMODE_BILINEAR;
 		}
 		else
 		{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n",k);
-				GenerateGLError(vampContext->glError,error);		
-				
-				return;			
+			vampContext->glError = GL_INVALID_OPERATION;
+			char error[1024];
+			sprintf(error, "glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n", param);
+			GenerateGLError(vampContext->glError, error);
+			return;
 		}
 	}
-	else if (j == GL_TEXTURE_MAG_FILTER)
+	else if (pname == GL_TEXTURE_MAG_FILTER)
 	{
-		if (k == GL_LINEAR)
+		if (param == GL_LINEAR)
 		{
-			vampContext->vampDrawModes|= MAG_DRAWMODE_BILINEAR;		
+			vampContext->vampDrawModes |= MAG_DRAWMODE_BILINEAR;
 		}
-		else if (k == GL_NEAREST)
+		else if (param == GL_NEAREST)
 		{
 			vampContext->vampDrawModes &= ~MAG_DRAWMODE_BILINEAR;
-		}	
+		}
 		else
 		{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n",k);
-				GenerateGLError(vampContext->glError,error);		
-				
-				return;			
-		}		
+			vampContext->glError = GL_INVALID_OPERATION;
+			char error[1024];
+			sprintf(error, "glTexParameteri currently only supports GL_LINEAR and GL_NEAREST, %d is not supported\n", param);
+			GenerateGLError(vampContext->glError, error);
+			return;
+		}
 	}
-	else if (j == GL_TEXTURE_WRAP_S)
+	else if (pname == GL_TEXTURE_WRAP_S)
 	{
+		// Handle GL_TEXTURE_WRAP_S parameter
 	}
-	else if (j == GL_TEXTURE_WRAP_T)
+	else if (pname == GL_TEXTURE_WRAP_T)
 	{
+		// Handle GL_TEXTURE_WRAP_T parameter
 	}
 	else
 	{
-				char error[1024];
-				
-				vampContext->glError = GL_INVALID_OPERATION;
-				sprintf(error,"glTexParameteri currently does not support %d\n",j);
-				GenerateGLError(vampContext->glError,error);		
-				
-				return;		
+		vampContext->glError = GL_INVALID_OPERATION;
+		char error[1024];
+		sprintf(error, "glTexParameteri currently does not support %d\n", pname);
+		GenerateGLError(vampContext->glError, error);
+		return;
 	}
 }
 

@@ -15,7 +15,7 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLBegin(struct GLVampContext *vampContext, int mode) 
+extern "C" void GLBegin(struct GLVampContext *vampContext, GLenum mode) 
 {
 	char error[1024];
 	std::vector<MaggieVertex> *vertices;
@@ -49,23 +49,23 @@ ULONG PackColor(ULONG r, ULONG g, ULONG b, ULONG a)
     return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
-extern "C" void GLFogfv(GLVampContext* vampContext, int i, float* col)
+extern "C" void GLFogfv(struct GLVampContext* vampContext, GLenum pname, const GLfloat* params)
 {
-    switch (i) {
+    switch (pname) {
         case GL_FOG_COLOR:
-            vampContext->fogParams.color = static_cast<unsigned int>(*col);
+            vampContext->fogParams.color = static_cast<unsigned int>(*params);
             break;
         case GL_FOG_DENSITY:
-            vampContext->fogParams.density = *col;
+            vampContext->fogParams.density = *params;
             break;
         case GL_FOG_START:
-            vampContext->fogParams.start = *col;
+            vampContext->fogParams.start = *params;
             break;
         case GL_FOG_END:
-            vampContext->fogParams.end = *col;
+            vampContext->fogParams.end = *params;
             break;
         case GL_FOG_MODE:
-            switch (static_cast<int>(*col)) {
+            switch (static_cast<int>(*params)) {
                 case FOG_LINEAR:
                     vampContext->fogParams.mode = FOG_LINEAR;
                     break;
@@ -77,12 +77,12 @@ extern "C" void GLFogfv(GLVampContext* vampContext, int i, float* col)
                     break;
                 default:
                     vampContext->glError = GL_INVALID_ENUM;
-                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog mode");				
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog mode");
                     break;
             }
             break;
         case GL_FOG_COORD_SRC:
-            switch (static_cast<int>(*col)) {
+            switch (static_cast<int>(*params)) {
                 case GL_FOG_COORD:
                     vampContext->fogParams.fogCoordSrc = GL_FOG_COORD;
                     break;
@@ -91,7 +91,7 @@ extern "C" void GLFogfv(GLVampContext* vampContext, int i, float* col)
                     break;
                 default:
                     vampContext->glError = GL_INVALID_ENUM;
-                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog Coord Src Mode");				
+                    GenerateGLError(GL_INVALID_ENUM, "Invalid fog Coord Src Mode");
                     break;
             }
             break;
@@ -100,7 +100,7 @@ extern "C" void GLFogfv(GLVampContext* vampContext, int i, float* col)
     }
 }
 
-extern "C" void GLFogi(GLVampContext* vampContext, int pname, int param)
+extern "C" void GLFogi(struct GLVampContext* vampContext, GLenum pname, GLint param)
 {
     switch (pname) {
         case GL_FOG_MODE: {
@@ -127,15 +127,15 @@ extern "C" void GLFogi(GLVampContext* vampContext, int pname, int param)
         }
 
         case GL_FOG_DENSITY:
-            vampContext->fogParams.density = static_cast<float>(param);
+            vampContext->fogParams.density = static_cast<GLfloat>(param);
             break;
 
         case GL_FOG_START:
-            vampContext->fogParams.start = static_cast<float>(param);
+            vampContext->fogParams.start = static_cast<GLfloat>(param);
             break;
 
         case GL_FOG_END:
-            vampContext->fogParams.end = static_cast<float>(param);
+            vampContext->fogParams.end = static_cast<GLfloat>(param);
             break;
 
         case GL_FOG_COLOR:
@@ -169,7 +169,7 @@ extern "C" void GLFogi(GLVampContext* vampContext, int pname, int param)
     }
 }
 
-extern "C" void GLFogf(GLVampContext* vampContext, int pname, float param)
+extern "C" void GLFogf(struct GLVampContext* vampContext, GLenum pname, GLfloat param)
 {
     switch (pname) {
         case GL_FOG_MODE: {
@@ -226,11 +226,12 @@ extern "C" void GLFogf(GLVampContext* vampContext, int pname, float param)
         }
 
         default:
-			vampContext->glError = GL_INVALID_ENUM;
+            vampContext->glError = GL_INVALID_ENUM;
             GenerateGLError(GL_INVALID_ENUM, "Invalid fog parameter");
             return;
     }
 }
+
 
 ULONG InterpolateColor(ULONG startColor, ULONG endColor, float factor)
 {
@@ -628,44 +629,44 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
 	if (!vampContext->manualDraw) magEnd();
 }
 
-void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, int height, unsigned int format, unsigned int type, void* pixels)
+void GLReadPixels(struct GLVampContext* vampContext, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels)
 {
-    unsigned char* screenPixels = (unsigned char *)vampContext->vampScreenPixels[vampContext->vampCurrentBuffer];
-    int bpp = vampContext->vampBpp;
-    int screen_width = vampContext->vampWidth;
+    unsigned char* screenPixels = reinterpret_cast<unsigned char*>(vampContext->vampScreenPixels[vampContext->vampCurrentBuffer]);
+    GLint bpp = vampContext->vampBpp;
+    GLint screen_width = vampContext->vampWidth;
 
     // Calculate the starting index in the screenPixels array based on the specified coordinates
-    int start_index = (y * screen_width + x) * bpp;
+    GLint start_index = (y * screen_width + x) * bpp;
 
     // Determine the order of color components based on the format parameter
-    int alpha_offset = (format == GL_BGRA) ? 3 : -1;
+    GLint alpha_offset = (format == GL_BGRA) ? 3 : -1;
 
     // Iterate over the specified region and copy the pixels to the provided memory location
-    for (int row = 0; row < height; row++)
+    for (GLsizei row = 0; row < height; row++)
     {
         // Calculate the offset in the screenPixels array for the current row
-        int row_offset = start_index + (row * screen_width * bpp);
+        GLint row_offset = start_index + (row * screen_width * bpp);
 
         // Calculate the offset in the destination pixels array for the current row
-        int dest_row_offset = row * width * bpp;
+        GLint dest_row_offset = row * width * bpp;
 
         // Copy the pixels from screenPixels to the destination pixels array
-        for (int col = 0; col < width; col++)
+        for (GLsizei col = 0; col < width; col++)
         {
             // Calculate the offset in the screenPixels array for the current column
-            int col_offset = col * bpp;
+            GLint col_offset = col * bpp;
 
             // Calculate the offset in the destination pixels array for the current column
-            int dest_col_offset = col * bpp;
+            GLint dest_col_offset = col * bpp;
 
             // Copy and convert the pixels from screenPixels to the destination pixels array
-            for (int i = 0; i < bpp; i++)
+            for (GLint i = 0; i < bpp; i++)
             {
                 // Calculate the index in the screenPixels array for the current pixel
-                int pixel_index = row_offset + col_offset + i;
+                GLint pixel_index = row_offset + col_offset + i;
 
                 // Calculate the index in the destination pixels array for the current pixel
-                int dest_pixel_index = dest_row_offset + dest_col_offset + i;
+                GLint dest_pixel_index = dest_row_offset + dest_col_offset + i;
 
                 // Determine the color component to copy based on the format parameter
                 unsigned char color_component = screenPixels[pixel_index];
@@ -684,11 +685,11 @@ void GLReadPixels(struct GLVampContext *vampContext, int x, int y, int width, in
 
                 // Convert and store the color component in the destination pixels array based on the specified type
                 if (type == GL_UNSIGNED_BYTE)
-                    ((unsigned char*)pixels)[dest_pixel_index] = color_component;
+                    reinterpret_cast<unsigned char*>(pixels)[dest_pixel_index] = color_component;
                 else if (type == GL_UNSIGNED_SHORT)
-                    ((unsigned short*)pixels)[dest_pixel_index] = color_component << 8;
+                    reinterpret_cast<unsigned short*>(pixels)[dest_pixel_index] = color_component << 8;
                 else if (type == GL_FLOAT)
-                    ((float*)pixels)[dest_pixel_index] = (float)color_component / 255.0f;
+                    reinterpret_cast<float*>(pixels)[dest_pixel_index] = static_cast<float>(color_component) / 255.0f;
             }
         }
     }

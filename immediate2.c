@@ -79,7 +79,7 @@ UWORD CubeIndices[5 * 6 - 1] =
 
 int main()
 {
-	int texNum = 1;
+	GLuint texNum = 1;
 	int i;
 	struct TagItem maggieTags[6];
 	

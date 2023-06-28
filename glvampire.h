@@ -14,6 +14,11 @@
 #define GLsizei size_t
 #define GLenum unsigned int
 #define GLushort unsigned short
+#define GLvoid void
+#define GLboolean GLuint
+#define GLchar char
+typedef void (*GLDEBUGPROC)(GLenum source, GLenum type, GLuint id, GLenum severity,
+                            GLsizei length, const GLchar* message, const void* userParam);
 
 // Matrix Manipulation
 
@@ -70,42 +75,40 @@ void glBlendEquation(GLenum mode);
 
 void glTexEnvi(GLenum target, GLenum pname, GLint param);
 void glTexEnvf(GLenum target, GLenum pname, GLfloat param);
+void glTexEnvfv(GLenum target, GLenum pname, const GLfloat* params);
 
-// Stuff which is probably only used for Default settings and probably can be removed
+// Fogging
 
-void glDepthMask(int i); // DONE
-void glCullFace(int i); // DONE (but not completely implemented)
-void glDrawBuffer(int i); // DONE (does nothing)
-void glPolygonMode(int i, int j); // DONE
-void glShadeModel(int i); // switch between smooth and flat shading, not sure if a big problem if missing
+void glFogi(GLenum pname, GLint param);
+void glFogfv(GLenum pname, const GLfloat *params);
+void glFogf(GLenum pname, GLfloat param);
 
-// Handling, a lot of it can be removed
+// Z Buffer
 
-int glGetError(); // DONE
-void glBegin(int i); // DONE
-void glEnd(); // DONE
+void glDepthRange(GLdouble nearVal, GLdouble farVal);
+void glDepthFunc(GLenum func);
+void glDepthMask(GLboolean flag);
 
-// glTexGen (might not be needed, not sure)
+// TexGen
 
-void glTexGeni(int i, int j, int k); // DONE (Partially)
-
-// Z Buffer (only used to avoid models stuck in walls)
-
-void glDepthRange(int i, int j);
-void glDepthFunc(int i); // DONE
+void glTexGeni(GLenum coord, GLenum pname, GLint param);
 
 // TexParameter
 
-void glTexParameteri(int i, int j, int k); // DONE (Partially)
+void glTexParameteri(GLenum target, GLenum pname, GLint param);
 
-// Optional (as in REALLY REALLY optional, can be removed)
+// Other functions
 
-void glFogi(int i, int j); // DONE
-void glFogfv(int i, float *col); // DONE
-void glReadPixels(int x, int y, int w, int h, int i, int j, void *k); // DONE
-void glFogf(int i, float j);
-char *glGetString(int i); // DONE
-
+void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
+GLenum glGetError(); 
+void glBegin(GLenum mode); 
+void glEnd(); 
+const GLubyte *glGetString(GLenum name); 
+void glCullFace(GLenum mode); 
+void glDrawBuffer(GLenum buf); 
+void glPolygonMode(GLenum face, GLenum mode); 
+void glShadeModel(GLenum mode); 
+void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
 
 #define GL_NO_ERROR 0
 #define GL_MODULATE 0x2100
@@ -316,7 +319,7 @@ struct GLVampContext
     GLfloat alphaScale;   
 	ULONG texEnvColor;
 	ULONG combineRGBConstant;
-	DebugMessageCallbackFunc glDebugMessage;
+	GLDEBUGPROC glDebugMessage;
 };
 
 #include "glvampiredefs.h"

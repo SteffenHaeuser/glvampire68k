@@ -12,7 +12,7 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLMatrixMode(struct GLVampContext *vampContext, int mode)
+extern "C" void GLMatrixMode(struct GLVampContext* vampContext, GLenum mode)
 {
     if (mode == GL_MODELVIEW)
     {
@@ -22,19 +22,19 @@ extern "C" void GLMatrixMode(struct GLVampContext *vampContext, int mode)
     {
         vampContext->currentMatrix = &vampContext->projectionMatrix;
     }
-	else
-	{
-		vampContext->glError = GL_INVALID_ENUM;
-		GenerateGLError(vampContext->glError,"glMatrixMode called with invalid parameter, only GL_MODELVIEW and GL_PROJECTION are valid\n");	
-	}
+    else
+    {
+        vampContext->glError = GL_INVALID_ENUM;
+        GenerateGLError(vampContext->glError, "glMatrixMode called with invalid parameter, only GL_MODELVIEW and GL_PROJECTION are valid\n");	
+    }
 }
 
-extern "C" void GLLoadIdentity(struct GLVampContext *vampContext)
+extern "C" void GLLoadIdentity(struct GLVampContext* vampContext)
 {
-	mat4_identity(vampContext->currentMatrix);
+    mat4_identity(vampContext->currentMatrix);
 }
 
-extern "C" void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix) 
+extern "C" void GLLoadMatrixf(struct GLVampContext* vampContext, const GLfloat* matrix)
 {
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -43,7 +43,7 @@ extern "C" void GLLoadMatrix(struct GLVampContext *vampContext, float *matrix)
     }
 }
 
-extern "C" void GLRotatef(struct GLVampContext *vampContext, float angle, float x, float y, float z) 
+extern "C" void GLRotatef(struct GLVampContext* vampContext, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
     GLLoadIdentity(vampContext);
 
@@ -52,28 +52,28 @@ extern "C" void GLRotatef(struct GLVampContext *vampContext, float angle, float 
     mat4_rotateZ(vampContext->currentMatrix, z * angle);
 }
 
-extern "C" void GLPushMatrix(struct GLVampContext *vampContext)
+extern "C" void GLPushMatrix(struct GLVampContext* vampContext)
 {
-	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)vampContext->matrixStack;
+    std::stack<mat4*>* matrixStack = reinterpret_cast<std::stack<mat4*>*>(vampContext->matrixStack);
     matrixStack->push(vampContext->currentMatrix);
 }
 
-extern "C" void GLPopMatrix(struct GLVampContext *vampContext)
+extern "C" void GLPopMatrix(struct GLVampContext* vampContext)
 {
-	std::stack<mat4*> *matrixStack = (std::stack<mat4*>*)(vampContext->matrixStack);
+    std::stack<mat4*>* matrixStack = reinterpret_cast<std::stack<mat4*>*>(vampContext->matrixStack);
     if (!matrixStack->empty())
     {
         vampContext->currentMatrix = matrixStack->top();
         matrixStack->pop();
     }
-	else 
-	{
-		vampContext->glError = GL_INVALID_OPERATION;
-		GenerateGLError(vampContext->glError,"Matrix Stack was empty on call of glPopMatrix\n");		
-	}
+    else 
+    {
+        vampContext->glError = GL_INVALID_OPERATION;
+        GenerateGLError(vampContext->glError, "Matrix Stack was empty on call of glPopMatrix\n");		
+    }
 }
 
-extern "C" void GLTranslatef(struct GLVampContext *vampContext,float x, float y, float z)
+extern "C" void GLTranslatef(struct GLVampContext* vampContext, GLfloat x, GLfloat y, GLfloat z)
 {
-	mat4_translate(vampContext->currentMatrix, x, y, z);
+    mat4_translate(vampContext->currentMatrix, x, y, z);
 }

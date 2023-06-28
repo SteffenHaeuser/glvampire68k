@@ -12,9 +12,9 @@
 
 extern struct Library *MaggieBase;
 
-extern "C" void GLEnable(struct GLVampContext* vampContext, int i)
+extern "C" void GLEnable(struct GLVampContext* vampContext, GLenum cap)
 {
-    switch (i) {
+    switch (cap) {
         case GL_FOG:
             vampContext->useFogging = true;
             break;
@@ -32,9 +32,9 @@ extern "C" void GLEnable(struct GLVampContext* vampContext, int i)
     }
 }
 
-extern "C" void GLDisable(struct GLVampContext* vampContext, int i)
+extern "C" void GLDisable(struct GLVampContext* vampContext, GLenum cap)
 {
-    switch (i) {
+    switch (cap) {
         case GL_FOG:
             vampContext->useFogging = false;
             break;
