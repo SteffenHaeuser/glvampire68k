@@ -18,6 +18,8 @@ void GLFrustum(struct GLVampContext* vampContext, GLdouble left, GLdouble right,
 void GLPushMatrix(struct GLVampContext* vampContext);
 void GLPopMatrix(struct GLVampContext* vampContext);
 void GLTranslatef(struct GLVampContext* vampContext, GLfloat x, GLfloat y, GLfloat z);
+void GLUPerspective(struct GLVampContext*, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar);
+void GLMultMatrixf(struct GLVampContext* vampContext, const GLfloat* matrix);
 
 // Colors
 
@@ -147,6 +149,8 @@ void GLUEndFrame(struct GLVampContext *vampContext);
 #define glPushMatrix() GLPushMatrix(&vampContext);
 #define glPopMatrix() GLPopMatrix(&vampContext);
 #define glTranslatef(x,y,z) GLTranslatef(&vampContext,x,y,z);
+#define gluPerspective(fovy, aspect, zNear, zFar) GLUPerspective(&vampContext,fovy,aspect,zNear,zFar);
+#define glMultMatrixf(matrix) GLMultMatrixf(&vampContext,matrix);
 #define glTexCoord2f(x,y) GLTexCoord2f(&vampContext,x,y);
 #define glBindTexture(i,j) GLBindTexture(&vampContext,i,j);
 #define glTexImage2D(i,j,k,l,m,n,o,p,pixels) GLTexImage2D(&vampContext,i,j,k,l,m,n,o,p,pixels);

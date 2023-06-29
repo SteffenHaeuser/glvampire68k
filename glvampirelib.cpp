@@ -36,6 +36,21 @@ void WaitVBLPassed()
 	vblPassed = 0;
 }
 
+extern "C" void GLUPerspective(struct GLVampContext *vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+{
+    GLfloat f = 1.0f / tanf(fovy * 0.5f * M_PI / 180.0f);
+    GLfloat depth = zNear - zFar;
+
+    GLfloat matrix[16] = {
+        f / aspect, 0.0f,              0.0f,                           0.0f,
+        0.0f,       f,                 0.0f,                           0.0f,
+        0.0f,       0.0f,   (zFar + zNear) / depth,  (2.0f * zFar * zNear) / depth,
+        0.0f,       0.0f,             -1.0f,                           0.0f
+    };
+
+    GLMultMatrixf(vampContext, matrix);
+}
+
 extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 {
 	volatile ULONG *SAGA_ChunkyData = (ULONG *)0xdff1ec;
@@ -63,7 +78,6 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 	magSetPerspectiveMatrix((float*)(&vampContext->projectionMatrix));
 	magSetViewMatrix((float*)(&vampContext->modelViewMatrix));	
 	magSetWorldMatrix((float*)(&vampContext->worldMatrix));
-	printf("Texture: %d\n",vampContext->currentTexture);
 	if (vampContext->currentTexture!=-1)
 	{
 		magSetTexture(0,vampContext->currentTexture);
