@@ -36,19 +36,15 @@ void WaitVBLPassed()
 	vblPassed = 0;
 }
 
-extern "C" void GLUPerspective(struct GLVampContext *vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
 {
-    GLfloat f = 1.0f / tanf(fovy * 0.5f * M_PI / 180.0f);
-    GLfloat depth = zNear - zFar;
-
-    GLfloat matrix[16] = {
-        f / aspect, 0.0f,              0.0f,                           0.0f,
-        0.0f,       f,                 0.0f,                           0.0f,
-        0.0f,       0.0f,   (zFar + zNear) / depth,  (2.0f * zFar * zNear) / depth,
-        0.0f,       0.0f,             -1.0f,                           0.0f
-    };
-
-    GLMultMatrixf(vampContext, matrix);
+	mat4 perspective;
+	
+	mat4_perspective(&perspective, fovy, aspect, zNear, zFar);
+	for (int i=0;i<16;i++)
+	{
+		vampContext->projectionMatrix.m[i/4][i%4] = perspective.m[i / 4][i % 4];
+	}	
 }
 
 extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)

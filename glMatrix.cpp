@@ -12,6 +12,19 @@
 
 extern struct Library *MaggieBase;
 
+extern "C" void GLMultMatrixf(struct GLVampContext* vampContext, const GLfloat* matrix)
+{
+    mat4 multMatrix;
+    memcpy(&multMatrix, matrix, sizeof(mat4));
+
+    mat4 *currentMatrix = vampContext->currentMatrix;
+    if (currentMatrix != NULL)
+    {
+        // Multiply the current matrix by the new matrix
+        mat4_mul(currentMatrix, &multMatrix, currentMatrix);
+    }
+}
+
 extern "C" void GLMatrixMode(struct GLVampContext* vampContext, GLenum mode)
 {
     if (mode == GL_MODELVIEW)
