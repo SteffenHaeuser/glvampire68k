@@ -63,6 +63,7 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 	magSetPerspectiveMatrix((float*)(&vampContext->projectionMatrix));
 	magSetViewMatrix((float*)(&vampContext->modelViewMatrix));	
 	magSetWorldMatrix((float*)(&vampContext->worldMatrix));
+	printf("Texture: %d\n",vampContext->currentTexture);
 	if (vampContext->currentTexture!=-1)
 	{
 		magSetTexture(0,vampContext->currentTexture);

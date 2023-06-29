@@ -125,6 +125,7 @@ extern "C" void GLBindTexture(struct GLVampContext *vampContext, GLenum target, 
 		if (num != vampTextureMap->end())
 		{
 			vampContext->currentTexture = num->second;
+			printf("TexSet: %d\n",vampContext->currentTexture);
 			magSetTexture(0, vampContext->currentTexture);
 		}
 		else
@@ -210,6 +211,7 @@ extern "C" void GLTexImage2D(struct GLVampContext *vampContext, GLenum target, G
 		vampTextureMap->insert(std::make_pair(vampContext->maxVampTex, texHandle));
 		vampContext->maxVampTex++;
 		magUploadTexture(texHandle, level, pixels, magFormat);
+		printf("Texture Uploaded: %x %x %d %d\n",texHandle,pixels,level,magFormat);
 	}
 }
 

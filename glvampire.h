@@ -236,6 +236,7 @@ void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
 #define FOG_LINEAR 0x2601
 #define FOG_EXP 0x0800
 #define FOG_EXP2 0x0801
+#define GL_TRIANGLES 0x0004
 
 #define GL_FOG_COORD 0x8451
 #define GL_FRAGMENT_DEPTH 0x8452

@@ -29,6 +29,7 @@ extern "C" void GLBegin(struct GLVampContext *vampContext, GLenum mode)
         case GL_LINE_STRIP:
         case GL_LINES:
         case GL_TRIANGLE_STRIP:
+		case GL_TRIANGLES:
             vampContext->currentMode = static_cast<int>(mode);
             vertices->clear();
             break;
@@ -41,6 +42,7 @@ extern "C" void GLBegin(struct GLVampContext *vampContext, GLenum mode)
 	//if ((mode==GL_QUADS)||(mode==GL_POLYGON)||(mode==GL_LINE_STRIP)||(mode==GL_LINES)) vampContext->manualDraw = 1;
 	//else vampContext->manualDraw = 0;
 	vampContext->manualDraw = 1;
+	//if (mode == GL_POLYGON) vampContext->manualDraw=0;
 	if (!vampContext->manualDraw) magBegin();
 }
 
@@ -436,6 +438,34 @@ void DrawQuads(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, 
     magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
 }
 
+void DrawTriangles(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
+{
+    if (vertices->size() < 3) {
+        vampContext->glError = GL_INVALID_VALUE;
+        GenerateGLError(GL_INVALID_VALUE, "Not enough vertices for polygon\n");
+        return;
+    }
+
+    std::vector<unsigned short> indices(vertices->size());
+    for (size_t i = 0; i < indices.size(); i++) {
+        indices[i] = static_cast<unsigned short>(i);
+    }
+
+    ApplyFogging(vampContext, vertices);
+    ApplyTexEnv(vampContext,*vertices, texenv);
+	if (vampContext->useBlending) 
+	{
+		ApplyBlendFunc(vampContext,*vertices);
+		ApplyBlendEquation(vampContext,*vertices);
+	}
+	if (vampContext->useAlphaFunc)
+	{
+		ApplyAlphaFunc(vampContext,*vertices);
+	}
+
+   magDrawTrianglesUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()));
+}
+
 void DrawPolygons(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
 {
     if (vertices->size() < 3) {
@@ -459,10 +489,10 @@ void DrawPolygons(GLVampContext* vampContext, std::vector<MaggieVertex>* vertice
 	if (vampContext->useAlphaFunc)
 	{
 		ApplyAlphaFunc(vampContext,*vertices);
-	}	
+	}
 
     // Draw the indexed polygons using the Maggie-3D chip
-    magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
+   magDrawIndexedPolygonsUP(&((*vertices)[0]), static_cast<unsigned short>(vertices->size()), &indices[0], static_cast<unsigned short>(indices.size()));
 }
 
 void DrawTriangleFan(GLVampContext* vampContext, std::vector<MaggieVertex>* vertices, int texenv)
@@ -611,6 +641,9 @@ extern "C" void GLEnd(struct GLVampContext *vampContext)
         case GL_POLYGON:
             DrawPolygons(vampContext,vertices, vampContext->texenv);
             break;
+		case GL_TRIANGLES:
+			DrawTriangles(vampContext,vertices, vampContext->texenv);
+			break;
         case GL_TRIANGLE_FAN:
 			DrawTriangleFan(vampContext,vertices, vampContext->texenv);
             break;
