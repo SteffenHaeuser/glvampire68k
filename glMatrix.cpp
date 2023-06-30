@@ -58,10 +58,21 @@ extern "C" void GLLoadMatrixf(struct GLVampContext* vampContext, const GLfloat* 
 
 extern "C" void GLRotatef(struct GLVampContext* vampContext, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-    mat4_rotateX(vampContext->currentMatrix, x * angle);
-    mat4_rotateY(vampContext->currentMatrix, y * angle);
-    mat4_rotateZ(vampContext->currentMatrix, z * angle);
+    mat4 rotationMatrix;
+    mat4_rotateX(&rotationMatrix, x * angle);
+    
+    mat4 yRot;
+    mat4_rotateY(&yRot, y * angle);
+    mat4_mul(&rotationMatrix, &rotationMatrix, &yRot);
+    
+   // mat4 zRot;
+  //  mat4_rotateZ(&zRot, z * angle);
+  //  mat4_mul(&rotationMatrix, &rotationMatrix, &zRot);
+
+    mat4_mul(vampContext->currentMatrix, vampContext->currentMatrix, &rotationMatrix);
 }
+
+
 
 extern "C" void GLPushMatrix(struct GLVampContext* vampContext)
 {
@@ -86,5 +97,11 @@ extern "C" void GLPopMatrix(struct GLVampContext* vampContext)
 
 extern "C" void GLTranslatef(struct GLVampContext* vampContext, GLfloat x, GLfloat y, GLfloat z)
 {
-    mat4_translate(vampContext->currentMatrix, x, y, z);
+    mat4 translationMatrix;
+    mat4_translate(&translationMatrix, x, y, z);
+    
+    mat4_mul(vampContext->currentMatrix, vampContext->currentMatrix, &translationMatrix);
 }
+
+
+
