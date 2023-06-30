@@ -58,8 +58,6 @@ extern "C" void GLLoadMatrixf(struct GLVampContext* vampContext, const GLfloat* 
 
 extern "C" void GLRotatef(struct GLVampContext* vampContext, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-    GLLoadIdentity(vampContext);
-
     mat4_rotateX(vampContext->currentMatrix, x * angle);
     mat4_rotateY(vampContext->currentMatrix, y * angle);
     mat4_rotateZ(vampContext->currentMatrix, z * angle);
