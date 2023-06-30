@@ -65,9 +65,9 @@ extern "C" void GLRotatef(struct GLVampContext* vampContext, GLfloat angle, GLfl
     mat4_rotateY(&yRot, y * angle);
     mat4_mul(&rotationMatrix, &rotationMatrix, &yRot);
     
-   // mat4 zRot;
-  //  mat4_rotateZ(&zRot, z * angle);
-  //  mat4_mul(&rotationMatrix, &rotationMatrix, &zRot);
+    mat4 zRot;
+    mat4_rotateZ(&zRot, z * angle);
+    mat4_mul(&rotationMatrix, &rotationMatrix, &zRot);
 
     mat4_mul(vampContext->currentMatrix, vampContext->currentMatrix, &rotationMatrix);
 }
