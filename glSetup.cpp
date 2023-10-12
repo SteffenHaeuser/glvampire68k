@@ -86,10 +86,11 @@ extern "C" void GLGetFloatv(struct GLVampContext *vampContext, int pname, float*
     if (pname == GL_MODELVIEW_MATRIX)
     {
         // Copy the values from the provided matrix to params
-        const mat4& matrix = *reinterpret_cast<const mat4*>(params);
+        const mat4& matrix = *reinterpret_cast<const mat4*>(&(vampContext->modelViewMatrix));
         for (int i = 0; i < 16; i++)
         {
             params[i] = matrix.m[i / 4][i % 4];
+			printf("%d %f\n",i,params[i]);
         }
     }
 	else 

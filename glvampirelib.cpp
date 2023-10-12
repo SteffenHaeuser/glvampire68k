@@ -36,6 +36,7 @@ void WaitVBLPassed()
 	vblPassed = 0;
 }
 
+#if 0
 void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
 {
 	mat4 perspective;
@@ -44,8 +45,132 @@ void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat asp
 	for (int i=0;i<16;i++)
 	{
 		vampContext->projectionMatrix.m[i/4][i%4] = perspective.m[i / 4][i % 4];
+				printf("%d: %f\n",i,vampContext->projectionMatrix.m[i/4][i%4]);
 	}	
 }
+#else
+	
+/*
+static void mat4_perspective(mat4 *res, float fov, float aspect, float znear, float zfar)
+{
+	float w, h;
+
+	fov *= 0.5f * 3.1415927f / 180.0f;
+	w = (float)cos(fov) / (float)sin(fov);
+	h = w / aspect;
+
+	mat4_identity(res);
+	res->m[0][0] = w;
+	res->m[1][1] = h;
+
+	res->m[2][2] = zfar / (zfar - znear);
+	res->m[3][2] = -znear * zfar / (zfar - znear);
+	res->m[2][3] = 1.0f;
+	res->m[3][3] = 0.0f;
+}*/
+	
+void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+{
+	fovy = fovy * 3.1415927f / 180.0f;
+    float f = 1.0f / tan(fovy * 0.5f);
+	mat4& projectionMatrix = vampContext->projectionMatrix;
+	
+	mat4_gluPerspective(&projectionMatrix, f, aspect, zNear, zFar);
+	printf("GLU Perspective\n");
+}	
+#if 0	
+void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+{
+	fovy = fovy * 3.1415927f / 180.0f;
+    float f = 1.0f / tan(fovy * 0.5f);
+    float depth = zNear - zFar;
+    
+    mat4& projectionMatrix = vampContext->projectionMatrix;
+    
+#if 0
+    vampContext->projectionMatrix.m[0][0] = f;
+    vampContext->projectionMatrix.m[0][1] = 0.0f;
+    vampContext->projectionMatrix.m[0][2] = 0.0f;
+    vampContext->projectionMatrix.m[0][3] = 0.0f;
+    
+    vampContext->projectionMatrix.m[1][0] = 0.0f;
+    vampContext->projectionMatrix.m[1][1] = f/aspect;
+    vampContext->projectionMatrix.m[1][2] = 0.0f;
+    vampContext->projectionMatrix.m[1][3] = 0.0f;
+    
+    vampContext->projectionMatrix.m[2][0] = 0.0f;
+    vampContext->projectionMatrix.m[2][1] = 0.0f;
+    vampContext->projectionMatrix.m[2][2] = (zFar + zNear) / depth;
+    vampContext->projectionMatrix.m[2][3] = -1.0f;
+    
+    vampContext->projectionMatrix.m[3][0] = 0.0f;
+    vampContext->projectionMatrix.m[3][1] = 0.0f;
+    vampContext->projectionMatrix.m[3][2] = 2.0f * zFar * zNear / depth;
+    vampContext->projectionMatrix.m[3][3] = 0.0f;
+#else
+    depth = zFar - zNear;
+    projectionMatrix.m[0][0] = f / aspect;
+    projectionMatrix.m[0][1] = 0.0f;
+    projectionMatrix.m[0][2] = 0.0f;
+    projectionMatrix.m[0][3] = 0.0f;
+    
+    projectionMatrix.m[1][0] = 0.0f;
+    projectionMatrix.m[1][1] = f;
+    projectionMatrix.m[1][2] = 0.0f;
+    projectionMatrix.m[1][3] = 0.0f;
+    
+    projectionMatrix.m[2][0] = 0.0f;
+    projectionMatrix.m[2][1] = 0.0f;
+    projectionMatrix.m[2][2] = -(zFar + zNear) / depth;
+    projectionMatrix.m[2][3] = 0.0f;
+    
+    projectionMatrix.m[3][0] = 0.0f;
+    projectionMatrix.m[3][1] = 0.0f;
+    projectionMatrix.m[3][2] = -2.0f * zFar * zNear / depth;
+    projectionMatrix.m[3][3] = 1.0f;
+#endif	
+	
+	for (int k=0;k<16;k++)
+	{
+		printf("%d: %f\n",k,vampContext->projectionMatrix.m[k/4][k%4]);
+	}
+}
+#endif
+/*
+void GLUPerspective(struct GLVampContext* vampContext, GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
+{
+    GLfloat ymax = zNear * tanf(fovy * 3.14159265358979323846 / 360.0);
+    GLfloat ymin = -ymax;
+    GLfloat xmin = ymin * aspect;
+    GLfloat xmax = ymax * aspect;
+
+    mat4 projectionMatrix;
+    projectionMatrix.m[0][0] = (2.0f * zNear) / (xmax - xmin);
+    projectionMatrix.m[0][1] = 0.0f;
+    projectionMatrix.m[0][2] = 0.0f;
+    projectionMatrix.m[0][3] = 0.0f;
+
+    projectionMatrix.m[1][0] = 0.0f;
+    projectionMatrix.m[1][1] = (2.0f * zNear) / (ymax - ymin); // Flip Y axis
+    projectionMatrix.m[1][2] = 0.0f;
+    projectionMatrix.m[1][3] = 0.0f;
+
+    projectionMatrix.m[2][0] = 0.0f;
+    projectionMatrix.m[2][1] = 0.0f;
+    projectionMatrix.m[2][2] = -(zFar + zNear) / (zFar - zNear); // Flip Z axis
+    projectionMatrix.m[2][3] = -1.0f;
+
+    projectionMatrix.m[3][0] = 0.0f;
+    projectionMatrix.m[3][1] = 0.0f;
+    projectionMatrix.m[3][2] = -(2.0f * zFar * zNear) / (zFar - zNear);
+    projectionMatrix.m[3][3] = 0.0f;
+
+    vampContext->projectionMatrix = projectionMatrix;
+}*/
+
+
+
+#endif
 
 extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 {
@@ -72,8 +197,24 @@ extern "C" void GLUBeginFrame(struct GLVampContext *vampContext)
 	magSetDrawMode(vampContext->vampDrawModes);
 	magSetScreenMemory((void **)pixels, vampContext->vampWidth, vampContext->vampHeight);		
 	magSetPerspectiveMatrix((float*)(&vampContext->projectionMatrix));
-	magSetViewMatrix((float*)(&vampContext->modelViewMatrix));	
-	magSetWorldMatrix((float*)(&vampContext->worldMatrix));
+
+    mat4 modelViewMatrix = vampContext->modelViewMatrix;
+    // Adjust the model-view matrix
+    modelViewMatrix.m[2][2] *= -1.0f; // Flip the sign of the third row
+    modelViewMatrix.m[3][2] *= -1.0f; // Flip the sign of the fourth row
+	
+    magSetViewMatrix((float *)&modelViewMatrix);
+    
+    // Apply transformation to fix coordinate system
+    mat4 worldMatrix = vampContext->worldMatrix;
+    // Adjust the world matrix
+    worldMatrix.m[2][2] *= -1.0f; // Multiply by -1
+    worldMatrix.m[3][2] *= -1.0f; // Multiply by -1
+    magSetWorldMatrix((float *)&worldMatrix);
+	for (int k=0;k<16;k++)
+	{
+		//printf("%d: %f %f\n",k,modelViewMatrix.m[k/4][k%4],worldMatrix.m[k/4][k%4]);
+	}	
 	if (vampContext->currentTexture!=-1)
 	{
 		magSetTexture(0,vampContext->currentTexture);
